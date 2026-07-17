@@ -2,6 +2,15 @@
 
 Running log of non-obvious fixes and architecture decisions — newest entries at the top. Populated by the `solutions-log` skill (see [CLAUDE.md](CLAUDE.md)). Skip trivial fixes; only log things that took real investigation or involved a tradeoff.
 
+## 2026-07-18 Second test file: extracted exam grading for testability
+
+**Symptom:** No test coverage for the exam-submission grading logic — the actual pass/fail determination shown to real users, arguably the highest-stakes calculation in the app (higher than Focus Coach's priority suggestions).
+**Root cause:** N/A — not a bug. `api/exam_submit.php` mixed live PDO writes (inserting `exam_answers`, updating `exam_attempts`) with the answer-comparison and scoring math in one script.
+**Fix:** Extracted three pure functions into `webapp/lib/exam_grading.php`: `csa_normalize_selected_letters()` (dedupes/sorts/type-coerces a raw submitted answer, tolerates malformed non-array input), `csa_is_answer_correct()` (order-independent exact-set comparison for multi-select questions), and `csa_compute_exam_score()` (score % and pass/fail threshold, with a zero-total guard). `exam_submit.php` now calls these instead of computing inline. Added `tests/ExamGradingTest.php` (14 tests, 22 assertions) covering: exact/multi-select match and mismatch, duplicate and mixed-type submitted letters, malformed/null input, the exact-threshold-passes boundary, zero-total-questions, and 2-decimal score rounding.
+**Why this approach:** Same behavior-preservation discipline as the Focus Coach extraction — backed up the original file, ran old inline logic against the new functions on 16 fixtures (10 grading scenarios + 6 scoring scenarios) via a throwaway script, zero mismatches, before writing a single test against the new code.
+
+**Scope note:** This covers 2 of 33 API endpoints now. See `CLAUDE.md`'s "Known Gaps" for what's still untested.
+
 ## 2026-07-18 First test suite: extracted Focus Coach scoring for testability
 
 **Symptom:** No automated tests existed anywhere in this project. All prior verification (per the session that built this app) was manual browser testing — not repeatable, nothing to run `ci-baseline-guard` against.

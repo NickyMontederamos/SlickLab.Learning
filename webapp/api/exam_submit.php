@@ -1,5 +1,6 @@
 <?php
 require __DIR__ . '/../config/bootstrap.php';
+require __DIR__ . '/../lib/exam_grading.php';
 
 $uid = require_login();
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -89,18 +90,11 @@ $review = [];
 
 foreach ($questions as $q) {
     $qid = (int)$q['id'];
-    $selected = $answers[(string)$qid] ?? ($answers[$qid] ?? []);
-    if (!is_array($selected)) {
-        $selected = [];
-    }
-    $selected = array_values(array_unique(array_map('strval', $selected)));
-    sort($selected);
+    $selectedRaw = $answers[(string)$qid] ?? ($answers[$qid] ?? []);
+    $selected = csa_normalize_selected_letters($selectedRaw);
 
     $correctLetters = $correctByQ[$qid] ?? [];
-    $correctSorted = $correctLetters;
-    sort($correctSorted);
-
-    $isCorrect = $selected === $correctSorted;
+    $isCorrect = csa_is_answer_correct($selected, $correctLetters);
     if ($isCorrect) {
         $correctCount++;
     }
@@ -125,9 +119,8 @@ foreach ($questions as $q) {
 }
 
 $total = count($questions);
-$scorePercent = $total > 0 ? round(($correctCount / $total) * 100, 2) : 0;
 $passPercent = csa_config()['exam']['pass_percent'];
-$passed = $scorePercent >= $passPercent;
+['scorePercent' => $scorePercent, 'passed' => $passed] = csa_compute_exam_score($correctCount, $total, (float)$passPercent);
 
 $upd = $pdo->prepare(
     "UPDATE exam_attempts SET submitted_at = NOW(), correct_count = ?, score_percent = ?, passed = ?, status = 'completed'

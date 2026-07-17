@@ -15,12 +15,15 @@ Nothing is on PATH — use full paths:
 - Build: n/a (no build step; deploy zips are assembled manually per `webapp/DEPLOY.md`)
 
 ## Test Suite Status
-As of 2026-07-18: **1 test file, 8 tests**, covering `webapp/lib/focus_coach_scoring.php` only (extracted from `webapp/api/focus_coach.php` specifically to make it testable without a live DB — see `SOLUTIONS_LOG.md`... not yet created, first real entry pending). Everything else in `webapp/api/` (32 other endpoints) and `webapp/assets/js/` (battle, drill, exam, flashcards logic) has **zero automated coverage** — all prior verification was manual browser testing in the session that built this app. Treat any `ci-baseline-guard` "regressions: 0" result as "no regressions detected in the ~3% of the app that has tests," not "the app is regression-free."
+As of 2026-07-18: **2 test files, 22 tests**, covering:
+- `webapp/lib/focus_coach_scoring.php` (extracted from `webapp/api/focus_coach.php`) — priority scoring, confidence-gap detection.
+- `webapp/lib/exam_grading.php` (extracted from `webapp/api/exam_submit.php`) — multi-select answer grading, score/pass-percent calculation.
+
+Everything else in `webapp/api/` (31 other endpoints) and `webapp/assets/js/` (battle, drill, exam, flashcards logic) has **zero automated coverage** — all prior verification was manual browser testing in the session that built this app. Treat any `ci-baseline-guard` "regressions: 0" result as "no regressions detected in the ~6% of the app that has tests," not "the app is regression-free."
 
 ## Project Memory
-- `.claude/ci-baseline.json` — current baseline (8/8 passing), not committed (no git repo yet — see below)
+- `.claude/ci-baseline.json` — current baseline (22/22 passing), gitignored (regenerate via `ci-baseline-capture`, don't hand-edit)
 
 ## Known Gaps
-- **No git repository.** This project has been managed entirely through deploy zips, no version control. Not set up as part of building the test suite — that's a separate decision for the user to make explicitly.
-- No tests for the other 32 API endpoints or any client-side JS logic (battle scoring, drill progress, exam timing).
+- No tests for the other 31 API endpoints or any client-side JS logic (battle scoring, drill progress, exam timing).
 - No CI pipeline — tests only run locally, on demand.

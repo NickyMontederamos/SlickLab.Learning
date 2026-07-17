@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard | SlickLab.Digital</title>
+<link rel="stylesheet" href="assets/css/style.css">
+<style>
+  .battle-card-highlight {
+    position: relative;
+    border: 2px solid #4f7cff;
+    animation: battleCardGlow 3s ease-in-out infinite;
+  }
+  @keyframes battleCardGlow {
+    0%, 100% { box-shadow: 0 0 12px rgba(79,124,255,0.35); border-color: #4f7cff; }
+    33% { box-shadow: 0 0 18px rgba(255,107,107,0.4); border-color: #ff6b6b; }
+    66% { box-shadow: 0 0 18px rgba(255,215,0,0.4); border-color: #ffd700; }
+  }
+  .new-badge {
+    position: absolute; top: -10px; right: 16px;
+    background: linear-gradient(135deg, #ff6b6b, #ff3d3d);
+    color: #fff; font-size: 0.7rem; font-weight: 800;
+    padding: 4px 10px; border-radius: 999px;
+    box-shadow: 0 2px 8px rgba(255,60,60,0.5);
+    animation: newBadgePulse 1.6s ease-in-out infinite;
+    letter-spacing: 0.5px;
+  }
+  @keyframes newBadgePulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.12); }
+  }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand">SlickLab.Digital <span class="brand-accent">| CebuPips | OG Exclusive</span></div>
+  <div class="topbar-actions">
+    <a href="leaderboard.html">Leaderboard</a>
+    <a href="account.html">Account</a>
+    <span id="whoami"></span>
+    <a href="#" id="logoutLink">Log out</a>
+  </div>
+</div>
+
+<div class="container">
+  <h1>Welcome back</h1>
+  <p class="muted">The Mock Exam is what actually gets you exam-ready &mdash; flashcards and the drill are here to prep you for it.</p>
+
+  <div class="card" id="countdownCard" style="display:none;"></div>
+
+  <div class="stat-grid" id="statGrid"></div>
+
+  <div class="card" id="streakCard"></div>
+
+  <!-- Mock Exam: primary featured mode -->
+  <div class="card" style="border-color: var(--accent); border-width: 2px;">
+    <h2 style="font-size:1.6rem;">🎯 Full Mock Exam</h2>
+    <p class="muted">Pick 25, 50, 100, or the full 274 &mdash; timer scales to match, 70% to pass. No answer feedback until you submit. This is the real test of whether you're ready.</p>
+    <a class="btn" href="exam.html" style="font-size:1.1rem; padding:14px 28px;">Start Mock Exam</a>
+  </div>
+
+  <div class="card battle-card-highlight">
+    <span class="new-badge">NEW!</span>
+    <h2>⚔️ Quiz Battle</h2>
+    <p class="muted">Challenge your teammates head-to-head &mdash; create a room, invite the crew, and race to answer live.</p>
+    <a class="btn secondary" href="battle.html">Quiz Battle</a>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h2>🎯 Top Mock Exam Scores</h2>
+      <div id="examLeaderboardWidget"><p class="muted">Loading...</p></div>
+    </div>
+    <div class="card">
+      <h2>🏆 Top Quiz Battle Players</h2>
+      <div id="battleLeaderboardWidget"><p class="muted">Loading...</p></div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h2>Flashcards</h2>
+      <p class="muted">Review mode. Spaced-repetition scheduling brings "Needs Review" cards back sooner. Filter by category, jot per-card notes, swipe to mark Known/Review, or try Match Game mode.</p>
+      <a class="btn secondary" href="flashcards.html">Study Flashcards</a>
+    </div>
+    <div class="card">
+      <h2>Missed Questions Drill</h2>
+      <p class="muted">Only the questions you've actually gotten wrong on a mock exam. Hammer your weak spots instead of re-reviewing what you already know.</p>
+      <a class="btn secondary" href="drill.html">Start Drill</a>
+    </div>
+  </div>
+
+  <div class="card" style="border-color: var(--accent); border-width: 2px;">
+    <h2>🧭 Focus Coach</h2>
+    <p class="muted">Not sure what to study next? Get a ranked priority list built from your real Mock Exam accuracy, flashcard mastery, and review recency &mdash; no guesswork.</p>
+    <a class="btn" href="coach.html">See What to Study Next</a>
+  </div>
+
+  <div class="card">
+    <h2>Weak Areas</h2>
+    <div id="weakAreasWrap"><p class="muted">Complete a mock exam to see your category breakdown.</p></div>
+  </div>
+
+  <div class="card">
+    <h2>Exam History</h2>
+    <div id="historyWrap"><p class="muted">Loading...</p></div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="footer-brand">SlickLab.Digital | CebuPips | OG Exclusive</div>
+  <p>Built for the crew grinding toward CSA certification together.</p>
+  <p class="footer-wish">Wishing Gil, Digi, JP, Bea, Nikki Vhine &amp; Nicky all the best on the CSA exam — you've got this! 🚀</p>
+  <p class="muted">Study hard, trust your prep, and go pass that exam on the first try.</p>
+</footer>
+
+<script src="assets/js/api.js"></script>
+<script>
+(async () => {
+  const me = await requireAuth();
+  if (!me) return;
+  document.getElementById('whoami').textContent = me.username;
+
+  if (sessionStorage.getItem('showConfidentialityNotice') === '1') {
+    sessionStorage.removeItem('showConfidentialityNotice');
+    showConfidentialityNotice();
+  }
+
+  if (sessionStorage.getItem('showV2Announcement') === '1') {
+    sessionStorage.removeItem('showV2Announcement');
+    localStorage.setItem('seenV2Announcement', '1');
+    showV2Announcement();
+  }
+
+  document.getElementById('logoutLink').addEventListener('click', async (e) => {
+    e.preventDefault();
+    await API.logout();
+    window.location.href = 'index.html';
+  });
+
+  const [{ questions }, { attempts }, { categories }, { streak, last30 }, { leaderboard, battleLeaderboard }] = await Promise.all([
+    API.questions(), API.examHistory(), API.categoryStats(), API.activity(), API.leaderboard(),
+  ]);
+
+  const escapeHtml = (str) => {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  };
+
+  // Top solo Mock Exam scores, same idea as the battle widget below — surface it
+  // on the dashboard instead of making people dig into the separate leaderboard page.
+  const examWidget = document.getElementById('examLeaderboardWidget');
+  const topScorers = (leaderboard || []).filter(r => r.bestScore !== null).slice(0, 5);
+  if (!topScorers.length) {
+    examWidget.innerHTML = '<p class="muted">No completed Mock Exams yet — be the first!</p>';
+  } else {
+    const medals = ['🥇', '🥈', '🥉'];
+    examWidget.innerHTML = topScorers.map((row, i) => `
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border);">
+        <span>${medals[i] || `${i + 1}.`} ${escapeHtml(row.username)}</span>
+        <span class="muted">${row.bestScore}%</span>
+      </div>`).join('') + '<p style="margin-top:10px;"><a href="leaderboard.html">View full leaderboard &rarr;</a></p>';
+  }
+
+  // Top Quiz Battle players, front and center on the dashboard instead of buried
+  // behind a separate leaderboard page nobody thinks to check.
+  const battleWidget = document.getElementById('battleLeaderboardWidget');
+  const topBattlers = (battleLeaderboard || []).filter(r => r.battlesPlayed > 0).slice(0, 5);
+  if (!topBattlers.length) {
+    battleWidget.innerHTML = '<p class="muted">No Quiz Battles played yet — start one above!</p>';
+  } else {
+    const medals = ['🥇', '🥈', '🥉'];
+    battleWidget.innerHTML = topBattlers.map((row, i) => `
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border);">
+        <span>${medals[i] || `${i + 1}.`} ${escapeHtml(row.username)}</span>
+        <span class="muted">${row.battlesWon} win${row.battlesWon === 1 ? '' : 's'} / ${row.battlesPlayed} played</span>
+      </div>`).join('') + '<p style="margin-top:10px;"><a href="leaderboard.html">View full leaderboard &rarr;</a></p>';
+  }
+
+  const known = questions.filter(q => q.progress === 'known').length;
+  const review = questions.filter(q => q.progress === 'review').length;
+  const bestScore = attempts.length ? Math.max(...attempts.map(a => a.scorePercent)) : null;
+
+  document.getElementById('statGrid').innerHTML = `
+    <div class="stat-box"><div class="num">${questions.length}</div><div class="label">Total Questions</div></div>
+    <div class="stat-box"><div class="num" style="color:var(--success)">${known}</div><div class="label">Known</div></div>
+    <div class="stat-box"><div class="num" style="color:var(--warning)">${review}</div><div class="label">Needs Review</div></div>
+    <div class="stat-box"><div class="num">${bestScore !== null ? bestScore + '%' : '—'}</div><div class="label">Best Exam Score</div></div>
+  `;
+
+  // Countdown + suggested pace
+  if (me.examDate) {
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const examDate = new Date(me.examDate + 'T00:00:00');
+    const daysLeft = Math.ceil((examDate - today) / 86400000);
+    const backlog = questions.filter(q => q.progress !== 'known').length;
+    const pace = daysLeft > 0 ? Math.ceil(backlog / daysLeft) : backlog;
+    const card = document.getElementById('countdownCard');
+    card.style.display = 'block';
+    card.innerHTML = daysLeft >= 0
+      ? `<h2>${daysLeft} day${daysLeft === 1 ? '' : 's'} until your exam</h2>
+         <p class="muted">${backlog} question(s) still need review. Aim for about <strong>${pace}/day</strong> to clear them in time.</p>`
+      : `<h2>Exam date has passed</h2><p class="muted">Update your exam date in <a href="account.html">Account</a> if you're still prepping.</p>`;
+  } else {
+    const card = document.getElementById('countdownCard');
+    card.style.display = 'block';
+    card.innerHTML = `<h2>Set your exam date</h2><p class="muted">Add your CSA exam date in <a href="account.html">Account</a> to get a countdown and daily pace target.</p>`;
+  }
+
+  // Study streak strip
+  const dots = last30.map(d => `<span title="${d.date}" style="display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:2px;background:${d.active ? 'var(--success)' : 'var(--border)'}"></span>`).join('');
+  document.getElementById('streakCard').innerHTML = `
+    <h2 style="margin-bottom:8px;">🔥 ${streak}-day streak</h2>
+    <div>${dots}</div>
+    <p class="muted" style="margin-top:8px;">Last 30 days of activity</p>
+  `;
+
+  // Weak areas
+  const weakWrap = document.getElementById('weakAreasWrap');
+  const withData = categories.filter(c => c.total > 0);
+  if (withData.length) {
+    weakWrap.innerHTML = withData.slice(0, 8).map(c => `
+      <div style="margin-bottom:10px;">
+        <div style="display:flex; justify-content:space-between; font-size:0.9rem; margin-bottom:4px;">
+          <span>${c.category}</span><span class="muted">${c.correct}/${c.total} (${c.percent}%)</span>
+        </div>
+        <div style="background:var(--bg-elevated); border-radius:6px; height:8px; overflow:hidden;">
+          <div style="width:${c.percent}%; height:100%; background:${c.percent < 60 ? 'var(--danger)' : c.percent < 80 ? 'var(--warning)' : 'var(--success)'};"></div>
+        </div>
+      </div>`).join('');
+  }
+
+  const wrap = document.getElementById('historyWrap');
+  if (!attempts.length) {
+    wrap.innerHTML = '<p class="muted">No completed exam attempts yet.</p>';
+  } else {
+    const rows = attempts.map(a => `
+      <tr>
+        <td>${new Date(a.submittedAt || a.startedAt).toLocaleString()}</td>
+        <td>${a.correctCount} / ${a.total}</td>
+        <td>${a.scorePercent}%</td>
+        <td>${a.passed ? '<span class="badge known">Pass</span>' : '<span class="badge review">Fail</span>'}</td>
+      </tr>`).join('');
+    wrap.innerHTML = `<table class="history"><thead><tr><th>Date</th><th>Score</th><th>%</th><th>Result</th></tr></thead><tbody>${rows}</tbody></table>`;
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "csa-prep-php",
+      "runtimeExecutable": "C:\\Users\\ndmon\\tools\\php\\php.exe",
+      "runtimeArgs": ["-S", "127.0.0.1:8000", "-t", "C:\\Users\\ndmon\\OneDrive\\Documents\\SLICKLAB.DIGITAL\\CSA_Prep\\webapp"],
+      "port": 8000
+    }
+  ]
+}

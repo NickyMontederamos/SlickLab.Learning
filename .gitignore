@@ -1,0 +1,19 @@
+# Secrets — never commit real DB credentials, even local-dev ones.
+webapp/config/config.local.php
+webapp/config/config.production.php
+
+# Deploy artifacts — webapp/ is the source of truth; these are build output.
+*.zip
+csa-prep-deploy*/
+csa-prep/
+webapp -/
+webapp -.zip
+
+# Study materials / generated reports — not source.
+*.pdf
+*.docx
+
+# Local tooling state.
+.phpunit.result.cache
+.claude/settings.local.json
+.claude/ci-baseline.json

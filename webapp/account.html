@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Account | SlickLab.Digital</title>
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<div class="topbar">
+  <div class="brand"><a href="dashboard.html" style="color:inherit;">SlickLab.Digital <span class="brand-accent">| CebuPips | OG Exclusive</span></a></div>
+  <div class="topbar-actions"><a href="dashboard.html">&larr; Dashboard</a></div>
+</div>
+
+<div class="container" style="max-width: 480px;">
+  <h1>Account</h1>
+
+  <div class="card">
+    <h2>Change Password</h2>
+    <label for="currentPassword">Current password</label>
+    <input id="currentPassword" type="password" autocomplete="current-password">
+    <label for="newPassword">New password (min 6 characters)</label>
+    <input id="newPassword" type="password" autocomplete="new-password">
+    <div class="error-msg" id="pwError"></div>
+    <button class="btn" id="pwBtn" style="width:100%;">Update Password</button>
+  </div>
+
+  <div class="card">
+    <h2>Exam Date</h2>
+    <p class="muted">Set your CSA exam date to see a countdown and suggested daily pace on the dashboard.</p>
+    <label for="examDateInput">Exam date</label>
+    <input id="examDateInput" type="date">
+    <div class="error-msg" id="dateError"></div>
+    <button class="btn secondary" id="dateBtn" style="width:100%;">Save Exam Date</button>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="footer-brand">SlickLab.Digital | CebuPips | OG Exclusive</div>
+  <p>Built for the crew grinding toward CSA certification together.</p>
+  <p class="footer-wish">Wishing Gil, Digi, JP, Bea, Nikki Vhine &amp; Nicky all the best on the CSA exam — you've got this! 🚀</p>
+  <p class="muted">Study hard, trust your prep, and go pass that exam on the first try.</p>
+</footer>
+
+<script src="assets/js/api.js"></script>
+<script>
+(async () => {
+  const me = await requireAuth();
+  if (!me) return;
+  if (me.examDate) document.getElementById('examDateInput').value = me.examDate;
+
+  document.getElementById('pwBtn').addEventListener('click', async () => {
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const errEl = document.getElementById('pwError');
+    errEl.textContent = '';
+    try {
+      await API.changePassword(currentPassword, newPassword);
+      document.getElementById('currentPassword').value = '';
+      document.getElementById('newPassword').value = '';
+      notify('Password updated.');
+    } catch (e) {
+      errEl.textContent = e.message;
+    }
+  });
+
+  document.getElementById('dateBtn').addEventListener('click', async () => {
+    const examDate = document.getElementById('examDateInput').value;
+    const errEl = document.getElementById('dateError');
+    errEl.textContent = '';
+    try {
+      await API.setExamDate(examDate);
+      notify('Exam date saved.');
+    } catch (e) {
+      errEl.textContent = e.message;
+    }
+  });
+})();
+</script>
+</body>
+</html>

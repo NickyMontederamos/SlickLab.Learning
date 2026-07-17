@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Missed Questions Drill | SlickLab.Digital</title>
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<div class="topbar">
+  <div class="brand"><a href="dashboard.html" style="color:inherit;">SlickLab.Digital <span class="brand-accent">| CebuPips | OG Exclusive</span></a></div>
+  <div class="topbar-actions"><a href="dashboard.html">&larr; Dashboard</a></div>
+</div>
+
+<div class="container">
+  <h1>Missed Questions Drill</h1>
+  <p class="muted">Every question you've ever gotten wrong on a mock exam, and haven't since marked Known. Mark a card Known once you've nailed it and it drops off this list.</p>
+
+  <div class="fc-progress">
+    <span id="fcPosition">Card 0 / 0</span>
+    <span id="fcConfidenceBadge"></span>
+  </div>
+
+  <div class="flashcard-stage">
+    <div class="flashcard" id="flashcard">
+      <div class="fc-label" id="fcCategory"></div>
+      <div class="fc-question" id="fcQuestion">Loading...</div>
+      <div class="fc-options" id="fcOptions"></div>
+      <div class="fc-answer" id="fcAnswer" style="display:none;"></div>
+    </div>
+  </div>
+  <p class="muted" style="text-align:center;">Click the card to reveal the answer.</p>
+
+  <div class="btn-row" style="justify-content:center; margin-bottom: 20px;">
+    <button class="btn secondary" id="prevBtn">&larr; Prev</button>
+    <button class="btn secondary" id="markReview">Still Struggling</button>
+    <button class="btn" id="markKnown">Got It Now</button>
+    <button class="btn secondary" id="nextBtn">Next &rarr;</button>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="footer-brand">SlickLab.Digital | CebuPips | OG Exclusive</div>
+  <p>Built for the crew grinding toward CSA certification together.</p>
+  <p class="footer-wish">Wishing Gil, Digi, JP, Bea, Nikki Vhine &amp; Nicky all the best on the CSA exam — you've got this! 🚀</p>
+  <p class="muted">Study hard, trust your prep, and go pass that exam on the first try.</p>
+</footer>
+
+<script src="assets/js/api.js"></script>
+<script src="assets/js/drill.js"></script>
+</body>
+</html>

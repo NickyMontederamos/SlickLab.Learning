@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Team Leaderboard | SlickLab.Digital</title>
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<div class="topbar">
+  <div class="brand"><a href="dashboard.html" style="color:inherit;">SlickLab.Digital <span class="brand-accent">| CebuPips | OG Exclusive</span></a></div>
+  <div class="topbar-actions"><a href="dashboard.html">&larr; Dashboard</a></div>
+</div>
+
+<div class="container">
+  <h1>Team Leaderboard</h1>
+  <p class="muted">Everyone studying for the CSA exam together. See who might need a nudge.</p>
+
+  <div class="card">
+    <h2>Solo Mock Exam</h2>
+    <div id="leaderboardWrap"><p class="muted">Loading...</p></div>
+  </div>
+
+  <div class="card">
+    <h2>⚔️ Quiz Battle</h2>
+    <div id="battleLeaderboardWrap"><p class="muted">Loading...</p></div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="footer-brand">SlickLab.Digital | CebuPips | OG Exclusive</div>
+  <p>Built for the crew grinding toward CSA certification together.</p>
+  <p class="footer-wish">Wishing Gil, Digi, JP, Bea, Nikki Vhine &amp; Nicky all the best on the CSA exam — you've got this! 🚀</p>
+  <p class="muted">Study hard, trust your prep, and go pass that exam on the first try.</p>
+</footer>
+
+<script src="assets/js/api.js"></script>
+<script>
+(async () => {
+  const me = await requireAuth();
+  if (!me) return;
+
+  const { leaderboard, battleLeaderboard } = await API.leaderboard();
+
+  const wrap = document.getElementById('leaderboardWrap');
+  if (!leaderboard.length) {
+    wrap.innerHTML = '<p class="muted">No accounts yet.</p>';
+  } else {
+    const rows = leaderboard.map(row => `
+      <tr>
+        <td>${row.username}</td>
+        <td>${row.bestScore !== null ? row.bestScore + '%' : '—'}</td>
+        <td>${row.lastActivity ? new Date(row.lastActivity).toLocaleDateString() : 'No activity yet'}</td>
+        <td>${row.weakestCategory || '—'}</td>
+      </tr>`).join('');
+    wrap.innerHTML = `<table class="history"><thead><tr><th>User</th><th>Best Score</th><th>Last Activity</th><th>Weakest Category</th></tr></thead><tbody>${rows}</tbody></table>`;
+  }
+
+  const battleWrap = document.getElementById('battleLeaderboardWrap');
+  const withBattles = (battleLeaderboard || []).filter(r => r.battlesPlayed > 0);
+  if (!withBattles.length) {
+    battleWrap.innerHTML = '<p class="muted">No Quiz Battles played yet — start one from the dashboard!</p>';
+  } else {
+    const rows = withBattles.map(row => `
+      <tr>
+        <td>${row.username}</td>
+        <td>${row.battlesWon}</td>
+        <td>${row.battlesPlayed}</td>
+      </tr>`).join('');
+    battleWrap.innerHTML = `<table class="history"><thead><tr><th>User</th><th>Wins</th><th>Battles Played</th></tr></thead><tbody>${rows}</tbody></table>`;
+  }
+})();
+</script>
+</body>
+</html>

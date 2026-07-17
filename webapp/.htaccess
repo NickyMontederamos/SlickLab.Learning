@@ -1,0 +1,16 @@
+# Force every browser to always revalidate HTML/JS/CSS with the server instead of
+# reusing a locally cached copy. Without this, different players' browsers can end
+# up running different versions of battle.js/battle.html after a deploy (one device
+# stuck on old cached code while another has the latest) purely due to normal
+# browser HTTP caching heuristics -- independent of any service worker.
+<IfModule mod_headers.c>
+  <FilesMatch "\.(html|js|css)$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+  </FilesMatch>
+</IfModule>
+
+<IfModule mod_expires.c>
+  ExpiresActive Off
+</IfModule>

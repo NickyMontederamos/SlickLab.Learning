@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mock Exam | SlickLab.Digital</title>
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<div class="topbar">
+  <div class="brand"><a href="dashboard.html" style="color:inherit;">SlickLab.Digital <span class="brand-accent">| CebuPips | OG Exclusive</span></a></div>
+  <div class="topbar-actions"><a href="dashboard.html" id="dashLink">&larr; Dashboard</a></div>
+</div>
+
+<div class="container">
+
+  <div id="introScreen" class="card">
+    <h1>Mock Exam</h1>
+
+    <div id="resumeSection" style="display:none;">
+      <p class="muted">You have an exam in progress: <strong id="resumeInfo"></strong>.</p>
+      <div class="btn-row">
+        <button class="btn" id="resumeBtn">Resume Exam</button>
+        <button class="btn secondary" id="startNewInsteadBtn">Abandon &amp; Start New Instead</button>
+      </div>
+    </div>
+
+    <div id="newExamSection">
+      <p class="muted">Questions are randomly drawn from the combined CSA question bank. The timer scales with how many you pick, 70% required to pass. Feedback and explanations are shown only after you submit.</p>
+      <p id="questionCountLine" class="muted"></p>
+
+      <label for="examCountSelect">Number of questions</label>
+      <select id="examCountSelect">
+        <option value="25">25 questions (~8 min)</option>
+        <option value="50">50 questions (~16 min)</option>
+        <option value="100">100 questions (~33 min)</option>
+        <option value="274" selected>Full 274 questions (90 min)</option>
+      </select>
+
+      <button class="btn" id="startBtn">Start Exam</button>
+    </div>
+  </div>
+
+  <div id="examScreen" style="display:none;">
+    <div class="exam-header">
+      <div class="exam-progress-text" id="progressText"></div>
+      <div class="timer" id="timer">90:00</div>
+    </div>
+    <div class="question-nav" id="questionNav"></div>
+
+    <div class="card">
+      <div class="fc-label" id="examCategory"></div>
+      <h2 id="examQuestionText"></h2>
+      <p class="muted" id="examChooseHint"></p>
+      <div id="examOptions"></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn secondary" id="examPrev">&larr; Prev</button>
+      <button class="btn secondary" id="examNext">Next &rarr;</button>
+      <button class="btn danger" id="examSubmit" style="margin-left:auto;">Submit Exam</button>
+    </div>
+  </div>
+
+  <div id="resultsScreen" style="display:none;">
+    <div class="card" id="scoreCard"></div>
+    <h2>Review</h2>
+    <div id="reviewList"></div>
+  </div>
+
+</div>
+
+<footer class="site-footer">
+  <div class="footer-brand">SlickLab.Digital | CebuPips | OG Exclusive</div>
+  <p>Built for the crew grinding toward CSA certification together.</p>
+  <p class="footer-wish">Wishing Gil, Digi, JP, Bea, Nikki Vhine &amp; Nicky all the best on the CSA exam — you've got this! 🚀</p>
+  <p class="muted">Study hard, trust your prep, and go pass that exam on the first try.</p>
+</footer>
+
+<script src="assets/js/api.js"></script>
+<script src="assets/js/exam.js"></script>
+</body>
+</html>

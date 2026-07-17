@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Focus Coach | SlickLab.Digital</title>
+<link rel="stylesheet" href="assets/css/style.css">
+<style>
+  .coach-item {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 16px 18px; margin-bottom: 14px;
+  }
+  .coach-item.rank-1 { border-color: var(--danger); }
+  .coach-item.rank-2 { border-color: var(--warning); }
+  .coach-item.rank-3 { border-color: var(--warning); }
+  .coach-item-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .coach-rank { font-size: 1.4rem; font-weight: 800; color: var(--text-dim); min-width: 32px; }
+  .coach-cat { font-size: 1.1rem; font-weight: 700; flex: 1; }
+  .coach-score { font-size: 0.85rem; color: var(--text-dim); white-space: nowrap; }
+  .coach-bar { background: var(--bg-elevated); border-radius: 6px; height: 8px; overflow: hidden; margin-bottom: 10px; }
+  .coach-bar-fill { height: 100%; background: var(--danger); }
+  .coach-reasons { list-style: none; padding: 0; margin: 0 0 12px; color: var(--text-dim); font-size: 0.86rem; }
+  .coach-reasons li { padding: 2px 0; }
+  .coach-reasons li::before { content: "• "; color: var(--accent); }
+  #coachSummary { margin-bottom: 20px; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand"><a href="dashboard.html" style="color:inherit;">SlickLab.Digital <span class="brand-accent">| CebuPips | OG Exclusive</span></a></div>
+  <div class="topbar-actions"><a href="dashboard.html">&larr; Dashboard</a></div>
+</div>
+
+<div class="container">
+  <h1>🧭 Focus Coach</h1>
+  <p class="muted">A ranked, no-nonsense read on where to spend your next study session &mdash; based on your actual Mock Exam accuracy, flashcard mastery, review recency, and your own flagged notes. No guesswork, no AI hallucination &mdash; just your real numbers.</p>
+
+  <div class="card" id="coachSummary"><p class="muted">Loading...</p></div>
+
+  <div id="coachList"></div>
+</div>
+
+<footer class="site-footer">
+  <div class="footer-brand">SlickLab.Digital | CebuPips | OG Exclusive</div>
+  <p>Built for the crew grinding toward CSA certification together.</p>
+  <p class="footer-wish">Wishing Gil, Digi, JP, Bea, Nikki Vhine &amp; Nicky all the best on the CSA exam — you've got this! 🚀</p>
+  <p class="muted">Study hard, trust your prep, and go pass that exam on the first try.</p>
+</footer>
+
+<script src="assets/js/api.js"></script>
+<script>
+(async () => {
+  const me = await requireAuth();
+  if (!me) return;
+
+  const escapeHtml = (str) => {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  };
+
+  const { categories } = await API.focusCoach();
+
+  const summaryEl = document.getElementById('coachSummary');
+  if (!categories.length) {
+    summaryEl.innerHTML = '<p class="muted">No question categories found yet.</p>';
+    document.getElementById('coachList').innerHTML = '';
+    return;
+  }
+
+  const top3 = categories.slice(0, 3).map(c => c.category);
+  summaryEl.innerHTML = `
+    <h2 style="margin-top:0;">Study these next</h2>
+    <p class="muted">In priority order: <strong>${top3.map(escapeHtml).join(' &rarr; ')}</strong></p>
+  `;
+
+  const maxScore = Math.max(...categories.map(c => c.priorityScore), 1);
+  document.getElementById('coachList').innerHTML = categories.map((c, i) => {
+    const rank = i + 1;
+    const barColor = c.priorityScore >= 65 ? 'var(--danger)' : c.priorityScore >= 40 ? 'var(--warning)' : 'var(--success)';
+    const examLabel = c.examPercent !== null ? `${c.examPercent}%` : '—';
+    return `
+      <div class="coach-item ${rank <= 3 ? 'rank-' + rank : ''}">
+        <div class="coach-item-head">
+          <span class="coach-rank">#${rank}</span>
+          <span class="coach-cat">${escapeHtml(c.category)}</span>
+          <span class="coach-score">Priority ${c.priorityScore} &middot; Exam ${examLabel} &middot; ${c.knownPercent}% mastered</span>
+        </div>
+        <div class="coach-bar"><div class="coach-bar-fill" style="width:${(c.priorityScore / maxScore) * 100}%; background:${barColor};"></div></div>
+        <ul class="coach-reasons">${c.reasons.map(r => `<li>${escapeHtml(r)}</li>`).join('')}</ul>
+        <div class="btn-row">
+          <a class="btn" href="flashcards.html?category=${encodeURIComponent(c.category)}&filter=all&mode=drill">▶ 1-Min Drill</a>
+          <a class="btn secondary" href="flashcards.html?category=${encodeURIComponent(c.category)}&filter=all">Study in Flashcards &rarr;</a>
+        </div>
+      </div>`;
+  }).join('');
+})();
+</script>
+</body>
+</html>

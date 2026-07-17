@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SlickLab.Digital | CebuPips | OG Exclusive</title>
+<link rel="stylesheet" href="assets/css/style.css">
+<style>
+  .v2-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #ffd700, #ffb300);
+    color: #1a1a2e;
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 999px;
+    vertical-align: middle;
+    box-shadow: 0 2px 6px rgba(255,179,0,0.4);
+  }
+</style>
+</head>
+<body>
+<div class="container" style="max-width: 420px; padding-top: 64px;">
+  <h1 style="text-align:center;">SlickLab.Digital <span class="brand-accent">| CebuPips | OG Exclusive</span> <span class="v2-badge">v2</span></h1>
+  <p class="muted" style="text-align:center; margin-top:-8px;">ServiceNow CSA exam trainer &mdash; flashcards &amp; full mock exam</p>
+
+  <div class="card">
+    <div id="loginForm">
+      <label for="loginUsername">Username</label>
+      <input id="loginUsername" type="text" autocomplete="username">
+      <label for="loginPassword">Password</label>
+      <input id="loginPassword" type="password" autocomplete="current-password">
+      <div class="error-msg" id="loginError"></div>
+      <button class="btn" id="loginBtn" style="width:100%;">Log In</button>
+    </div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="footer-brand">SlickLab.Digital | CebuPips | OG Exclusive</div>
+  <p>Built for the crew grinding toward CSA certification together.</p>
+  <p class="footer-wish">Wishing Gil, Digi, JP, Bea, Nikki Vhine &amp; Nicky all the best on the CSA exam — you've got this! 🚀</p>
+  <p class="muted">Study hard, trust your prep, and go pass that exam on the first try.</p>
+</footer>
+
+<script src="assets/js/api.js"></script>
+<script>
+document.getElementById('loginBtn').addEventListener('click', async () => {
+  const username = document.getElementById('loginUsername').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const errEl = document.getElementById('loginError');
+  errEl.textContent = '';
+  try {
+    await API.login({ username, password });
+    sessionStorage.setItem('showConfidentialityNotice', '1');
+    if (localStorage.getItem('seenV2Announcement') !== '1') {
+      sessionStorage.setItem('showV2Announcement', '1');
+    }
+    window.location.href = 'dashboard.html';
+  } catch (e) {
+    errEl.textContent = e.message;
+  }
+});
+
+// If already logged in, skip straight to dashboard.
+API.me().then((me) => { if (me.authenticated) window.location.href = 'dashboard.html'; }).catch(() => {});
+</script>
+</body>
+</html>

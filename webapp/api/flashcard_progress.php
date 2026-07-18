@@ -1,5 +1,6 @@
 <?php
 require __DIR__ . '/../config/bootstrap.php';
+require __DIR__ . '/../lib/flashcard_scheduling.php';
 
 $uid = require_login();
 
@@ -19,23 +20,16 @@ if ($confidence !== null && ($confidence < 1 || $confidence > 5)) {
     json_error('Invalid confidence');
 }
 
-// Leitner box schedule: box -> minutes until due.
-$INTERVALS = [0 => 10, 1 => 1440, 2 => 4320, 3 => 10080, 4 => 43200]; // 10m, 1d, 3d, 7d, 30d
-
 $pdo = csa_db();
 $stmt = $pdo->prepare('SELECT box FROM flashcard_progress WHERE user_id = ? AND question_id = ?');
 $stmt->execute([$uid, $questionId]);
 $row = $stmt->fetch();
 $box = $row ? (int)$row['box'] : 0;
 
-if ($result === 'again') {
-    $box = 0;
-} else {
-    $box = min($box + 1, 4);
-}
-
-$status = $box <= 1 ? 'review' : 'known';
-$dueMinutes = $INTERVALS[$box];
+$next = csa_next_leitner_state($box, $result);
+$box = $next['box'];
+$status = $next['status'];
+$dueMinutes = $next['dueMinutes'];
 
 $stmt = $pdo->prepare(
     'INSERT INTO flashcard_progress (user_id, question_id, status, box, due_at, last_reviewed_at, last_confidence)

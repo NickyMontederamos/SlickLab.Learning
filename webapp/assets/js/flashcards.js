@@ -417,11 +417,12 @@
   function startDrillTimer() {
     stopDrillTimer();
     drillTimer = setInterval(() => {
-      if (drillPaused || !drillQuestions.length) return;
-      drillProgress += (DRILL_TICK_MS / DRILL_DURATION_MS) * 100;
-      if (drillProgress >= 100) {
+      if (!drillQuestions.length) return;
+      const tick = DrillTiming.computeDrillTick(drillProgress, drillPaused, DRILL_TICK_MS, DRILL_DURATION_MS);
+      drillProgress = tick.progress;
+      if (tick.shouldAdvance) {
         advanceDrill(1);
-      } else {
+      } else if (!drillPaused) {
         document.getElementById('drillProgressFill').style.width = drillProgress + '%';
       }
     }, DRILL_TICK_MS);
@@ -459,7 +460,7 @@
 
   function advanceDrill(dir) {
     if (!drillQuestions.length) return;
-    drillIdx = (drillIdx + dir + drillQuestions.length) % drillQuestions.length;
+    drillIdx = DrillTiming.nextDrillIndex(drillIdx, dir, drillQuestions.length);
     renderDrillCard();
   }
 

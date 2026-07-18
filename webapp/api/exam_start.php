@@ -1,5 +1,6 @@
 <?php
 require __DIR__ . '/../config/bootstrap.php';
+require __DIR__ . '/../lib/exam_planning.php';
 
 $uid = require_login();
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -12,9 +13,6 @@ $config = csa_config()['exam'];
 $in = json_input();
 $requestedCount = (int)($in['count'] ?? 0);
 $allowedCounts = [25, 50, 100, 274];
-if (!in_array($requestedCount, $allowedCounts, true)) {
-    $requestedCount = 274;
-}
 
 // Abandon any stale in_progress attempt before starting a fresh one.
 $pdo->prepare("UPDATE exam_attempts SET status = 'abandoned' WHERE user_id = ? AND status = 'in_progress'")
@@ -23,7 +21,10 @@ $pdo->prepare("UPDATE exam_attempts SET status = 'abandoned' WHERE user_id = ? A
 $allIds = $pdo->query('SELECT id FROM questions ORDER BY id')->fetchAll(PDO::FETCH_COLUMN);
 $fullTotal = count($allIds);
 
-$count = min($requestedCount, $fullTotal);
+$plan = csa_plan_exam($requestedCount, $allowedCounts, 274, $fullTotal, (int)$config['duration_seconds']);
+$count = $plan['count'];
+$durationSeconds = $plan['durationSeconds'];
+
 shuffle($allIds);
 $selectedIds = array_slice($allIds, 0, $count);
 
@@ -49,11 +50,6 @@ foreach ($optionsByQ as $qid => $opts) {
     $optionsByQ[$qid] = $opts;
     $optionOrder[$qid] = array_map(fn($o) => $o['letter'], $opts);
 }
-
-// Scale the timer proportionally to the full 90-minute / 274-question pace.
-$fullDuration = (int)$config['duration_seconds'];
-$durationSeconds = (int)round(($fullDuration / $fullTotal) * $count / 30) * 30; // round to nearest 30s
-$durationSeconds = max(60, $durationSeconds);
 
 $stmt = $pdo->prepare(
     'INSERT INTO exam_attempts (user_id, duration_seconds, total_questions, question_ids, option_order, status)

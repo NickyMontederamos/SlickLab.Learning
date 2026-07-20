@@ -6,6 +6,12 @@
       "runtimeExecutable": "C:\\Users\\ndmon\\tools\\php\\php.exe",
       "runtimeArgs": ["-S", "127.0.0.1:8000", "-t", "C:\\Users\\ndmon\\OneDrive\\Documents\\SLICKLAB.DIGITAL\\CSA_Prep\\webapp"],
       "port": 8000
+    },
+    {
+      "name": "csa-prep-mariadb",
+      "runtimeExecutable": "C:\\Users\\ndmon\\tools\\mariadb\\mariadb-11.4.5-winx64\\bin\\mariadbd.exe",
+      "runtimeArgs": ["--datadir=C:\\Users\\ndmon\\tools\\mariadb\\mariadb-11.4.5-winx64\\data", "--port=3307", "--bind-address=127.0.0.1"],
+      "port": 3307
     }
   ]
 }

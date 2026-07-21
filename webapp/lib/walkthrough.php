@@ -6,8 +6,11 @@
  * 2. Otherwise a category-level template, if one exists for this category.
  * 3. Otherwise a friendly "coming soon" fallback.
  *
- * {{SERVICE_NOW_URL}} is substituted last, on whichever text was chosen —
- * with a helpful placeholder if the user hasn't set one in Account settings.
+ * {{SERVICE_NOW_URL}} is substituted last, on whichever text was chosen. If
+ * no URL is configured, the entire line containing the placeholder is
+ * dropped rather than replaced with a nudge to go set one — the steps
+ * stand alone without it, and the user shouldn't be pestered to configure
+ * anything just to read them.
  */
 function csa_resolve_walkthrough(
     ?string $questionWalkthrough,
@@ -26,9 +29,12 @@ function csa_resolve_walkthrough(
         return "Walkthrough coming soon! We haven't written a hands-on guide for this question or its category (\"{$category}\") yet.";
     }
 
-    $urlForDisplay = ($serviceNowUrl !== null && trim($serviceNowUrl) !== '')
-        ? rtrim(trim($serviceNowUrl), '/')
-        : 'your ServiceNow instance (set this in Account settings for a direct link)';
+    if ($serviceNowUrl !== null && trim($serviceNowUrl) !== '') {
+        $urlForDisplay = rtrim(trim($serviceNowUrl), '/');
+        return str_replace('{{SERVICE_NOW_URL}}', $urlForDisplay, $text);
+    }
 
-    return str_replace('{{SERVICE_NOW_URL}}', $urlForDisplay, $text);
+    $lines = explode("\n", $text);
+    $lines = array_filter($lines, fn($line) => !str_contains($line, '{{SERVICE_NOW_URL}}'));
+    return rtrim(implode("\n", $lines));
 }

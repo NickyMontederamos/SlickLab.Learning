@@ -2,6 +2,13 @@
 
 Running log of non-obvious fixes and architecture decisions — newest entries at the top. Populated by the `solutions-log` skill (see [CLAUDE.md](CLAUDE.md)). Skip trivial fixes; only log things that took real investigation or involved a tradeoff.
 
+## 2026-07-21 Drop the ServiceNow-URL nudge line instead of substituting a placeholder
+
+**Symptom:** When no ServiceNow instance URL was configured, walkthrough text showed "Your ServiceNow instance: your ServiceNow instance (set this in Account settings for a direct link)" — a nudge to go configure something just to read steps that stand on their own without it.
+**Root cause:** N/A — design choice, not a bug. User feedback after seeing the working walkthrough for the first time.
+**Fix:** `csa_resolve_walkthrough()` now drops the entire line containing `{{SERVICE_NOW_URL}}` when no URL is set, instead of substituting a placeholder phrase into it. Only substitutes a real value when one exists; otherwise the line simply isn't there. Updated `tests/WalkthroughTest.php`'s fixture to put the placeholder on its own line (matching the real templates in `walkthrough_templates.php`) so the tests actually exercise "drop the whole line" rather than "blank out part of a line" — the old single-line fixture would have hidden this distinction.
+**Why this approach:** Verified against a real template (CMDB) via direct execution, not just the test fixture, before trusting it — confirmed the no-URL output ends cleanly at the last real step with no dangling blank line or leftover label.
+
 ## 2026-07-21 Fix: "Show Me How" button appeared to do nothing (nested-button-inside-toggle-card bug)
 
 **Symptom:** Clicking "Show Me How" on a revealed flashcard had no visible effect — reported by the user after deploying Feature 3 to SlickPrepTime.

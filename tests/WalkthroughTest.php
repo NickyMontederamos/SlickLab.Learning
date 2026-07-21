@@ -8,8 +8,11 @@ final class WalkthroughTest extends TestCase
 
     protected function setUp(): void
     {
+        // Placeholder lives on its own line, matching the real templates in
+        // walkthrough_templates.php — needed so tests correctly exercise
+        // "drop the whole line" rather than "blank out part of a line".
         $this->templates = [
-            'CMDB' => 'Steps for CMDB. Instance: {{SERVICE_NOW_URL}}',
+            'CMDB' => "Steps for CMDB.\n\nYour ServiceNow instance: {{SERVICE_NOW_URL}}",
             'Forms' => 'Steps for Forms, no placeholder here.',
         ];
     }
@@ -43,21 +46,32 @@ final class WalkthroughTest extends TestCase
     public function testServiceNowUrlPlaceholderIsSubstitutedWhenSet(): void
     {
         $result = csa_resolve_walkthrough(null, 'CMDB', $this->templates, 'https://dev12345.service-now.com');
-        $this->assertStringContainsString('Instance: https://dev12345.service-now.com', $result);
+        $this->assertStringContainsString('Your ServiceNow instance: https://dev12345.service-now.com', $result);
         $this->assertStringNotContainsString('{{SERVICE_NOW_URL}}', $result);
     }
 
     public function testServiceNowUrlTrailingSlashIsStripped(): void
     {
         $result = csa_resolve_walkthrough(null, 'CMDB', $this->templates, 'https://dev12345.service-now.com/');
-        $this->assertStringContainsString('Instance: https://dev12345.service-now.com', $result);
+        $this->assertStringContainsString('Your ServiceNow instance: https://dev12345.service-now.com', $result);
         $this->assertStringNotContainsString('.com//', $result);
     }
 
-    public function testFriendlyPlaceholderShownWhenServiceNowUrlNotSet(): void
+    public function testServiceNowUrlLineIsDroppedEntirelyWhenNotSet(): void
     {
+        // No nudge to go configure one — the line just isn't there.
         $result = csa_resolve_walkthrough(null, 'CMDB', $this->templates, null);
-        $this->assertStringContainsString('set this in Account settings', $result);
+        $this->assertStringNotContainsString('{{SERVICE_NOW_URL}}', $result);
+        $this->assertStringNotContainsString('Your ServiceNow instance:', $result);
+        $this->assertStringNotContainsString('Account settings', $result);
+        $this->assertSame('Steps for CMDB.', $result);
+    }
+
+    public function testEmptyStringServiceNowUrlIsTreatedAsNotSet(): void
+    {
+        $result = csa_resolve_walkthrough(null, 'CMDB', $this->templates, '  ');
+        $this->assertStringNotContainsString('Your ServiceNow instance:', $result);
+        $this->assertSame('Steps for CMDB.', $result);
     }
 
     public function testTemplateWithoutAPlaceholderIsUnaffectedByMissingUrl(): void
@@ -67,9 +81,9 @@ final class WalkthroughTest extends TestCase
         $this->assertSame('Steps for Forms, no placeholder here.', $result);
     }
 
-    public function testEmptyStringServiceNowUrlIsTreatedAsNotSet(): void
+    public function testTemplateWithoutAPlaceholderIsUnaffectedWhenUrlIsSet(): void
     {
-        $result = csa_resolve_walkthrough(null, 'CMDB', $this->templates, '  ');
-        $this->assertStringContainsString('set this in Account settings', $result);
+        $result = csa_resolve_walkthrough(null, 'Forms', $this->templates, 'https://dev12345.service-now.com');
+        $this->assertSame('Steps for Forms, no placeholder here.', $result);
     }
 }

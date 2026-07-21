@@ -21,6 +21,23 @@
     return s.length > max ? s.slice(0, max - 1) + '…' : s;
   }
 
+  // --- Text-to-speech ---
+  // TTS_STORAGE_KEY absent (first visit) defaults to enabled, per the
+  // approved plan (default ON for coaching sessions).
+  const TTS_STORAGE_KEY = 'csa_tts_enabled';
+  let ttsEnabled = localStorage.getItem(TTS_STORAGE_KEY) !== 'false';
+
+  // force=true bypasses the ttsEnabled toggle — the manual Speak button is
+  // an explicit request and should work even with auto-speak switched off;
+  // the toggle only gates the automatic calls (on card render/reveal).
+  function speakSegments(segments, { force = false } = {}) {
+    if ((!ttsEnabled && !force) || !('speechSynthesis' in window) || !segments.length) return;
+    window.speechSynthesis.cancel(); // don't stack speech from the previous card/state
+    segments.forEach((seg) => {
+      window.speechSynthesis.speak(new SpeechSynthesisUtterance(seg.text));
+    });
+  }
+
   // --- Category filter ---
   function populateCategories() {
     const categories = [...new Set(allQuestions.map(q => q.category))].sort();
@@ -99,6 +116,8 @@
 
     confidenceSlider.value = q.selfConfidence || 3;
     updateConfidenceLabel();
+
+    speakSegments(TtsSegments.buildSpeechSegments(q, { includeQuestion: true, includeAnswer: false }));
   }
 
   function reveal() {
@@ -121,6 +140,8 @@
     walkthroughEl.textContent = q.walkthrough || '';
     walkthroughEl.style.display = 'none'; // starts collapsed; button toggles it
     document.getElementById('fcWalkthroughWrap').style.display = q.walkthrough ? 'block' : 'none';
+
+    speakSegments(TtsSegments.buildSpeechSegments(q, { includeQuestion: false, includeAnswer: true }));
   }
 
   async function review(result) {
@@ -165,6 +186,22 @@
     e.stopPropagation();
     const el = document.getElementById('fcWalkthrough');
     el.style.display = el.style.display === 'none' ? 'block' : 'none';
+  });
+
+  document.getElementById('ttsToggle').addEventListener('change', (e) => {
+    ttsEnabled = e.target.checked;
+    localStorage.setItem(TTS_STORAGE_KEY, String(ttsEnabled));
+    if (!ttsEnabled && 'speechSynthesis' in window) window.speechSynthesis.cancel();
+  });
+  document.getElementById('ttsToggle').checked = ttsEnabled;
+
+  document.getElementById('fcSpeakBtn').addEventListener('click', () => {
+    const q = filtered[idx];
+    if (!q) return;
+    speakSegments(
+      TtsSegments.buildSpeechSegments(q, { includeQuestion: !revealed, includeAnswer: revealed }),
+      { force: true }
+    );
   });
 
   document.querySelectorAll('#fcFilters button').forEach(btn => {
@@ -471,6 +508,11 @@
       <div class="muted">${escapeHtml(q.explanation)}</div>
       ${q.wrongAnswerNotes ? `<div class="muted" style="margin-top:8px;"><strong>Watch out:</strong> ${escapeHtml(q.wrongAnswerNotes)}</div>` : ''}
     `;
+
+    // Rapid Drill shows Q+A together (no separate reveal step), so both get
+    // spoken at once. A card that auto-advances before speech finishes just
+    // cuts off — that's the "rapid" part; Pause exists for a reason.
+    speakSegments(TtsSegments.buildSpeechSegments(q, { includeQuestion: true, includeAnswer: true }));
   }
 
   function advanceDrill(dir) {
@@ -494,8 +536,14 @@
     drillPaused = !drillPaused;
     e.target.textContent = drillPaused ? 'Resume' : 'Pause';
   });
+  document.getElementById('drillSpeakBtn').addEventListener('click', () => {
+    const q = drillQuestions[drillIdx];
+    if (!q) return;
+    speakSegments(TtsSegments.buildSpeechSegments(q, { includeQuestion: true, includeAnswer: true }), { force: true });
+  });
 
   function setMode(mode) {
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
     currentMode = mode;
     document.getElementById('modeStudyBtn').classList.toggle('active', mode === 'study');
     document.getElementById('modeMatchBtn').classList.toggle('active', mode === 'match');

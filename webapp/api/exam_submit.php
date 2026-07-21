@@ -117,7 +117,14 @@ foreach ($questions as $q) {
         'text' => $q['question_text'],
         'category' => $q['category'],
         'explanation' => $q['explanation'],
-        'walkthrough' => csa_resolve_walkthrough($q['walkthrough'], $q['category'], $categoryTemplates, $serviceNowUrl),
+        'walkthrough' => csa_resolve_walkthrough(
+            $q['walkthrough'],
+            $q['category'],
+            $categoryTemplates,
+            $serviceNowUrl,
+            $q['question_text'],
+            csa_correct_answer_summary($optionsByQ[$qid] ?? [])
+        ),
         'options' => $optionsByQ[$qid] ?? [],
         'selected' => $selected,
         'correctAnswer' => $correctLetters,

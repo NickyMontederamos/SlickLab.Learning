@@ -93,6 +93,10 @@
     <select id="fcCategorySelect">
       <option value="">All categories</option>
     </select>
+    <label style="display:flex; align-items:center; gap:6px; font-size:0.85rem; color:var(--muted); cursor:pointer;">
+      <input type="checkbox" id="ttsToggle" checked>
+      &#128266; Read Aloud
+    </label>
     <div class="mode-tabs">
       <button class="btn secondary active" id="modeStudyBtn" type="button">Study</button>
       <button class="btn secondary" id="modeMatchBtn" type="button">Match Game</button>
@@ -147,6 +151,7 @@
       <button class="btn danger" id="markAgain">Again</button>
       <button class="btn" id="markGood">Good</button>
       <button class="btn secondary" id="nextBtn">Next &rarr;</button>
+      <button class="btn secondary" id="fcSpeakBtn" type="button">&#128266; Speak</button>
     </div>
   </div>
 
@@ -174,6 +179,7 @@
       <button class="btn secondary" id="drillPrevBtn">&larr; Prev</button>
       <button class="btn" id="drillPauseBtn">Pause</button>
       <button class="btn secondary" id="drillNextBtn">Next &rarr;</button>
+      <button class="btn secondary" id="drillSpeakBtn" type="button">&#128266; Speak</button>
     </div>
   </div>
 </div>
@@ -187,6 +193,7 @@
 
 <script src="assets/js/api.js"></script>
 <script src="assets/js/lib/drill-timing.js"></script>
+<script src="assets/js/lib/tts.js"></script>
 <script src="assets/js/flashcards.js"></script>
 </body>
 </html>

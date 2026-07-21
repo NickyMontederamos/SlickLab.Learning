@@ -54,7 +54,14 @@ foreach ($questions as $q) {
         'explanation' => $q['explanation'],
         'wrongAnswerNotes' => $q['wrong_answer_notes'],
         'confidence' => $q['confidence'],
-        'walkthrough' => csa_resolve_walkthrough($q['walkthrough'], $q['category'], $categoryTemplates, $serviceNowUrl),
+        'walkthrough' => csa_resolve_walkthrough(
+            $q['walkthrough'],
+            $q['category'],
+            $categoryTemplates,
+            $serviceNowUrl,
+            $q['question_text'],
+            csa_correct_answer_summary($optionsByQ[$qid] ?? [])
+        ),
         'options' => $optionsByQ[$qid] ?? [],
         'progress' => $p['status'] ?? 'unseen',
         'box' => $p['box'] ?? 0,

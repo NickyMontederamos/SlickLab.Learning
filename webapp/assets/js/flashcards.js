@@ -158,7 +158,11 @@
   document.getElementById('prevBtn').addEventListener('click', goPrev);
   document.getElementById('markGood').addEventListener('click', () => review('good'));
   document.getElementById('markAgain').addEventListener('click', () => review('again'));
-  document.getElementById('fcShowMeHowBtn').addEventListener('click', () => {
+  document.getElementById('fcShowMeHowBtn').addEventListener('click', (e) => {
+    // #flashcard has its own click-to-toggle-reveal listener; without this,
+    // the click bubbles up to it and immediately collapses the card back
+    // (calling render(), which re-hides this very panel) right after opening.
+    e.stopPropagation();
     const el = document.getElementById('fcWalkthrough');
     el.style.display = el.style.display === 'none' ? 'block' : 'none';
   });
@@ -256,7 +260,7 @@
   }
 
   cardEl.addEventListener('pointerdown', (e) => {
-    if (e.target.closest('#fcNoteBox')) return;
+    if (e.target.closest('#fcNoteBox') || e.target.closest('#fcNoteToggle') || e.target.closest('#fcWalkthroughWrap')) return;
     if (!filtered.length) return;
     dragging = true;
     pointerMoved = false;
@@ -314,7 +318,7 @@
 
   cardEl.addEventListener('click', (e) => {
     if (suppressClick) { suppressClick = false; return; }
-    if (e.target.closest('#fcNoteBox')) return;
+    if (e.target.closest('#fcNoteBox') || e.target.closest('#fcNoteToggle') || e.target.closest('#fcWalkthroughWrap')) return;
     if (!revealed) reveal(); else render();
   });
 

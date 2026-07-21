@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
     exam_date DATE NULL,
     last_active_at DATETIME NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    service_now_url VARCHAR(255) NULL,
     UNIQUE KEY uniq_username (username)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -20,7 +21,8 @@ CREATE TABLE IF NOT EXISTS questions (
     category VARCHAR(60) NOT NULL,
     explanation TEXT NOT NULL,
     wrong_answer_notes TEXT NULL,
-    confidence ENUM('high','medium','low') NOT NULL DEFAULT 'high'
+    confidence ENUM('high','medium','low') NOT NULL DEFAULT 'high',
+    walkthrough TEXT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS options (

@@ -1,6 +1,7 @@
 <?php
 require __DIR__ . '/../config/bootstrap.php';
 require __DIR__ . '/../lib/exam_grading.php';
+require __DIR__ . '/../lib/walkthrough.php';
 
 $uid = require_login();
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -33,8 +34,13 @@ if (!is_array($selectedIds) || !count($selectedIds)) {
     $selectedIds = $pdo->query('SELECT id FROM questions ORDER BY id')->fetchAll(PDO::FETCH_COLUMN);
 }
 
+$categoryTemplates = require __DIR__ . '/../lib/walkthrough_templates.php';
+$userStmt = $pdo->prepare('SELECT service_now_url FROM users WHERE id = ?');
+$userStmt->execute([$uid]);
+$serviceNowUrl = $userStmt->fetchColumn() ?: null;
+
 $placeholders = implode(',', array_fill(0, count($selectedIds), '?'));
-$stmt = $pdo->prepare("SELECT id, question_text, explanation, category FROM questions WHERE id IN ($placeholders) ORDER BY id");
+$stmt = $pdo->prepare("SELECT id, question_text, explanation, category, walkthrough FROM questions WHERE id IN ($placeholders) ORDER BY id");
 $stmt->execute($selectedIds);
 $questions = $stmt->fetchAll();
 
@@ -111,6 +117,7 @@ foreach ($questions as $q) {
         'text' => $q['question_text'],
         'category' => $q['category'],
         'explanation' => $q['explanation'],
+        'walkthrough' => csa_resolve_walkthrough($q['walkthrough'], $q['category'], $categoryTemplates, $serviceNowUrl),
         'options' => $optionsByQ[$qid] ?? [],
         'selected' => $selected,
         'correctAnswer' => $correctLetters,

@@ -33,6 +33,15 @@
     <div class="error-msg" id="dateError"></div>
     <button class="btn secondary" id="dateBtn" style="width:100%;">Save Exam Date</button>
   </div>
+
+  <div class="card">
+    <h2>ServiceNow Instance</h2>
+    <p class="muted">Link your personal developer instance so "Show Me How" walkthroughs point you straight to it.</p>
+    <label for="serviceNowUrlInput">Instance URL</label>
+    <input id="serviceNowUrlInput" type="url" placeholder="https://dev123456.service-now.com">
+    <div class="error-msg" id="snUrlError"></div>
+    <button class="btn secondary" id="snUrlBtn" style="width:100%;">Save Instance URL</button>
+  </div>
 </div>
 
 <footer class="site-footer">
@@ -48,6 +57,7 @@
   const me = await requireAuth();
   if (!me) return;
   if (me.examDate) document.getElementById('examDateInput').value = me.examDate;
+  if (me.serviceNowUrl) document.getElementById('serviceNowUrlInput').value = me.serviceNowUrl;
 
   document.getElementById('pwBtn').addEventListener('click', async () => {
     const currentPassword = document.getElementById('currentPassword').value;
@@ -71,6 +81,18 @@
     try {
       await API.setExamDate(examDate);
       notify('Exam date saved.');
+    } catch (e) {
+      errEl.textContent = e.message;
+    }
+  });
+
+  document.getElementById('snUrlBtn').addEventListener('click', async () => {
+    const serviceNowUrl = document.getElementById('serviceNowUrlInput').value;
+    const errEl = document.getElementById('snUrlError');
+    errEl.textContent = '';
+    try {
+      await API.setServiceNowUrl(serviceNowUrl);
+      notify('ServiceNow instance URL saved.');
     } catch (e) {
       errEl.textContent = e.message;
     }

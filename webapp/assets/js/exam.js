@@ -169,9 +169,23 @@
           <h3>${escapeHtml(r.text)}</h3>
           ${optsHtml}
           <p class="muted" style="margin-top:10px;">${escapeHtml(r.explanation)}</p>
+          ${r.walkthrough ? `
+            <button type="button" class="btn secondary show-me-how-btn" data-idx="${i}" style="margin-top:10px;">&#128421; Show Me How</button>
+            <div class="walkthrough-panel" id="examWalkthrough${i}" style="display:none; white-space:pre-wrap; margin-top:8px;">${escapeHtml(r.walkthrough)}</div>
+          ` : ''}
         </div>`;
     }).join('');
   }
+
+  // Delegated listener on the stable reviewList container — its children get
+  // fully replaced on every showResults() call, so binding per-button would
+  // leak listeners; binding once here survives every re-render.
+  document.getElementById('reviewList').addEventListener('click', (e) => {
+    const btn = e.target.closest('.show-me-how-btn');
+    if (!btn) return;
+    const panel = document.getElementById('examWalkthrough' + btn.dataset.idx);
+    if (panel) panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+  });
 
   function enterExamScreen() {
     introScreen.style.display = 'none';

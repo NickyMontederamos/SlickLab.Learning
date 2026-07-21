@@ -59,6 +59,8 @@
     document.getElementById('fcPosition').textContent = total ? `Card ${idx + 1} / ${total}` : 'No cards in this filter';
     const answerEl = document.getElementById('fcAnswer');
     answerEl.style.display = 'none';
+    document.getElementById('fcWalkthroughWrap').style.display = 'none';
+    document.getElementById('fcWalkthrough').style.display = 'none';
     resetCardTransform();
 
     const noteBox = document.getElementById('fcNoteBox');
@@ -114,6 +116,11 @@
     `;
     document.getElementById('fcConfidenceBadge').innerHTML = `<span class="badge ${q.progress}">${q.progress}</span>`;
     document.getElementById('fcConfidenceWrap').style.display = 'block';
+
+    const walkthroughEl = document.getElementById('fcWalkthrough');
+    walkthroughEl.textContent = q.walkthrough || '';
+    walkthroughEl.style.display = 'none'; // starts collapsed; button toggles it
+    document.getElementById('fcWalkthroughWrap').style.display = q.walkthrough ? 'block' : 'none';
   }
 
   async function review(result) {
@@ -151,6 +158,10 @@
   document.getElementById('prevBtn').addEventListener('click', goPrev);
   document.getElementById('markGood').addEventListener('click', () => review('good'));
   document.getElementById('markAgain').addEventListener('click', () => review('again'));
+  document.getElementById('fcShowMeHowBtn').addEventListener('click', () => {
+    const el = document.getElementById('fcWalkthrough');
+    el.style.display = el.style.display === 'none' ? 'block' : 'none';
+  });
 
   document.querySelectorAll('#fcFilters button').forEach(btn => {
     btn.addEventListener('click', () => {

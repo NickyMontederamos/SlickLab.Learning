@@ -61,6 +61,7 @@ const API = (() => {
     saveFlashcardNote: (questionId, note) =>
       call('flashcard_note.php', { method: 'POST', body: { questionId, note } }),
     setExamDate: (examDate) => call('set_exam_date.php', { method: 'POST', body: { examDate } }),
+    setServiceNowUrl: (serviceNowUrl) => call('set_service_now_url.php', { method: 'POST', body: { serviceNowUrl } }),
     leaderboard: () => call('leaderboard.php'),
     changePassword: (currentPassword, newPassword) =>
       call('change_password.php', { method: 'POST', body: { currentPassword, newPassword } }),

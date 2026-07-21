@@ -7,7 +7,7 @@ if ($uid === null) {
 }
 
 $pdo = csa_db();
-$stmt = $pdo->prepare('SELECT username, exam_date FROM users WHERE id = ?');
+$stmt = $pdo->prepare('SELECT username, exam_date, service_now_url FROM users WHERE id = ?');
 $stmt->execute([$uid]);
 $row = $stmt->fetch();
 
@@ -16,4 +16,5 @@ json_out([
     'id' => $uid,
     'username' => $row['username'] ?? ($_SESSION['username'] ?? ''),
     'examDate' => $row['exam_date'] ?? null,
+    'serviceNowUrl' => $row['service_now_url'] ?? null,
 ]);

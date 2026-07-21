@@ -1,11 +1,18 @@
 <?php
 require __DIR__ . '/../config/bootstrap.php';
+require __DIR__ . '/../lib/walkthrough.php';
 
 $uid = require_login();
 $pdo = csa_db();
 
+$categoryTemplates = require __DIR__ . '/../lib/walkthrough_templates.php';
+
+$userStmt = $pdo->prepare('SELECT service_now_url FROM users WHERE id = ?');
+$userStmt->execute([$uid]);
+$serviceNowUrl = $userStmt->fetchColumn() ?: null;
+
 $questions = $pdo->query(
-    'SELECT id, source, orig_num, question_text, choose_n, category, explanation, wrong_answer_notes, confidence FROM questions ORDER BY id'
+    'SELECT id, source, orig_num, question_text, choose_n, category, explanation, wrong_answer_notes, confidence, walkthrough FROM questions ORDER BY id'
 )->fetchAll();
 
 $options = $pdo->query('SELECT id, question_id, letter, option_text, is_correct FROM options ORDER BY question_id, letter')->fetchAll();
@@ -47,6 +54,7 @@ foreach ($questions as $q) {
         'explanation' => $q['explanation'],
         'wrongAnswerNotes' => $q['wrong_answer_notes'],
         'confidence' => $q['confidence'],
+        'walkthrough' => csa_resolve_walkthrough($q['walkthrough'], $q['category'], $categoryTemplates, $serviceNowUrl),
         'options' => $optionsByQ[$qid] ?? [],
         'progress' => $p['status'] ?? 'unseen',
         'box' => $p['box'] ?? 0,

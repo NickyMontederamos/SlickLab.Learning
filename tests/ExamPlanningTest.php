@@ -77,4 +77,29 @@ final class ExamPlanningTest extends TestCase
         $plan = csa_plan_exam(100, self::ALLOWED_COUNTS, self::DEFAULT_COUNT, 50, self::FULL_DURATION);
         $this->assertSame(50, $plan['count']);
     }
+
+    // --- csa_scale_exam_duration() ---
+    // Split out for mini-exams: a fixed incorrect-question count (e.g. 7)
+    // isn't one of the preset allowedCounts, so it can't go through
+    // csa_plan_exam()'s count validation at all.
+
+    public function testScaleExamDurationForANonPresetCount(): void
+    {
+        $duration = csa_scale_exam_duration(self::FULL_DURATION, self::FULL_TOTAL, 7);
+        $this->assertSame(150, $duration);
+    }
+
+    public function testScaleExamDurationStillHasThe60SecondFloor(): void
+    {
+        $duration = csa_scale_exam_duration(self::FULL_DURATION, self::FULL_TOTAL, 1);
+        $this->assertGreaterThanOrEqual(60, $duration);
+    }
+
+    public function testScaleExamDurationMatchesCsaPlanExamForAPresetCount(): void
+    {
+        // Same formula, same result, whichever entry point is used.
+        $viaPlan = csa_plan_exam(50, self::ALLOWED_COUNTS, self::DEFAULT_COUNT, self::FULL_TOTAL, self::FULL_DURATION);
+        $viaScale = csa_scale_exam_duration(self::FULL_DURATION, self::FULL_TOTAL, 50);
+        $this->assertSame($viaPlan['durationSeconds'], $viaScale);
+    }
 }

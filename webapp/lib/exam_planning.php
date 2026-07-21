@@ -26,12 +26,21 @@ function csa_plan_exam(
         $requestedCount = $defaultCount;
     }
     $count = min($requestedCount, $fullTotalQuestions);
-
-    // Scale the timer proportionally to the full-length pace, rounded to the
-    // nearest 30 seconds, with a 60-second floor so a tiny quiz never gets a
-    // near-zero timer.
-    $durationSeconds = (int)round(($fullDurationSeconds / $fullTotalQuestions) * $count / 30) * 30;
-    $durationSeconds = max(60, $durationSeconds);
+    $durationSeconds = csa_scale_exam_duration($fullDurationSeconds, $fullTotalQuestions, $count);
 
     return ['count' => $count, 'durationSeconds' => $durationSeconds];
+}
+
+/**
+ * Scales the timer proportionally to the full-length pace, rounded to the
+ * nearest 30 seconds, with a 60-second floor so a tiny quiz never gets a
+ * near-zero timer. Split out of csa_plan_exam() so callers with a count that
+ * isn't one of the preset allowedCounts (e.g. a mini-exam's fixed incorrect-
+ * question set) can scale duration without going through count validation
+ * meant for the preset-count picker.
+ */
+function csa_scale_exam_duration(int $fullDurationSeconds, int $fullTotalQuestions, int $count): int
+{
+    $durationSeconds = (int)round(($fullDurationSeconds / $fullTotalQuestions) * $count / 30) * 30;
+    return max(60, $durationSeconds);
 }

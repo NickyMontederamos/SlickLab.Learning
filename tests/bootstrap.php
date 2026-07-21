@@ -6,3 +6,4 @@ require __DIR__ . '/../webapp/lib/flashcard_scheduling.php';
 require __DIR__ . '/../webapp/lib/exam_planning.php';
 require __DIR__ . '/../webapp/lib/table_prefix.php';
 require __DIR__ . '/../webapp/lib/walkthrough.php';
+require __DIR__ . '/../webapp/lib/incorrect_review.php';

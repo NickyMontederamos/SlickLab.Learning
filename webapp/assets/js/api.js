@@ -47,9 +47,11 @@ const API = (() => {
     me: () => call('me.php'),
     login: (payload) => call('login.php', { method: 'POST', body: payload }),
     logout: () => call('logout.php', { method: 'POST' }),
-    questions: () => call('questions.php'),
+    questions: (attemptId) => call(attemptId ? `questions.php?attemptId=${attemptId}` : 'questions.php'),
     examActive: () => call('exam_active.php'),
     examStart: (count) => call('exam_start.php', { method: 'POST', body: { count } }),
+    examStartMini: (parentAttemptId) => call('exam_start.php', { method: 'POST', body: { parentAttemptId } }),
+    incorrectReviewStatus: (attemptId) => call(`incorrect_review_status.php?attemptId=${attemptId}`),
     examSubmit: (attemptId, answers) =>
       call('exam_submit.php', { method: 'POST', body: { attemptId, answers } }),
     examHistory: () => call('exam_history.php'),

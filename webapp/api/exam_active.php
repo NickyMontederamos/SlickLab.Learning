@@ -5,7 +5,7 @@ $uid = require_login();
 $pdo = csa_db();
 
 $stmt = $pdo->prepare(
-    "SELECT id, started_at, duration_seconds, total_questions, question_ids, option_order FROM exam_attempts
+    "SELECT id, started_at, duration_seconds, total_questions, question_ids, option_order, attempt_kind, parent_attempt_id FROM exam_attempts
      WHERE user_id = ? AND status = 'in_progress' ORDER BY id DESC LIMIT 1"
 );
 $stmt->execute([$uid]);
@@ -77,4 +77,6 @@ json_out([
     'remainingSeconds' => $remaining,
     'totalQuestions' => (int)$attempt['total_questions'],
     'questions' => $out,
+    'attemptKind' => $attempt['attempt_kind'],
+    'parentAttemptId' => $attempt['parent_attempt_id'] !== null ? (int)$attempt['parent_attempt_id'] : null,
 ]);

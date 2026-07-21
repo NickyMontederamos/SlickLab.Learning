@@ -10,6 +10,7 @@
   let searchTerm = '';
   let currentCategory = '';
   let currentMode = 'study'; // 'study' | 'match' | 'drill'
+  let incorrectReviewAttemptId = null; // non-null => Incorrect Review mode is active
 
   function escapeHtml(str) {
     const div = document.createElement('div');
@@ -161,7 +162,41 @@
         if (selfConfidence !== null) master.selfConfidence = selfConfidence;
       }
     } catch (e) { /* non-fatal */ }
+    if (incorrectReviewAttemptId) refreshIncorrectReviewStatus();
     goNext();
+  }
+
+  // --- Incorrect Answers Review mode ---
+  async function refreshIncorrectReviewStatus() {
+    if (!incorrectReviewAttemptId) return;
+    const box = document.getElementById('incorrectReviewReadyBox');
+    try {
+      const status = await API.incorrectReviewStatus(incorrectReviewAttemptId);
+      document.getElementById('incorrectReviewSummary').textContent =
+        `${status.knownCount} / ${status.total} known (${Math.round(status.knownRate * 100)}%)`;
+      if (status.ready) {
+        box.innerHTML = `
+          <p><strong>Ready for a mini-exam?</strong> You know enough of these to give it a shot.</p>
+          <button class="btn" id="startMiniExamBtn" type="button">Start Mini-Exam</button>
+        `;
+        document.getElementById('startMiniExamBtn').addEventListener('click', async (e) => {
+          e.target.disabled = true;
+          e.target.textContent = 'Starting...';
+          try {
+            await API.examStartMini(incorrectReviewAttemptId);
+            window.location.href = 'exam.html';
+          } catch (err) {
+            notify('Could not start mini-exam: ' + err.message);
+            e.target.disabled = false;
+            e.target.textContent = 'Start Mini-Exam';
+          }
+        });
+      } else {
+        box.innerHTML = `<p class="muted">You're not quite ready yet — keep reviewing until at least 80% of these are Known.</p>`;
+      }
+    } catch (e) {
+      box.innerHTML = '';
+    }
   }
 
   function goNext() {
@@ -559,18 +594,35 @@
   document.getElementById('modeDrillBtn').addEventListener('click', () => setMode('drill'));
 
   // --- boot ---
-  const { questions } = await API.questions();
-  allQuestions = questions;
-  populateCategories();
-
   // Deep-link support: ?category=X&filter=all lets the Focus Coach dashboard
   // jump straight into a pre-filtered deck instead of the user picking it manually.
   const params = new URLSearchParams(window.location.search);
   const linkedCategory = params.get('category');
   const linkedFilter = params.get('filter');
   const linkedMode = params.get('mode');
+  const linkedAttemptId = parseInt(params.get('attemptId'), 10);
 
-  if (linkedCategory && allQuestions.some(q => q.category === linkedCategory)) {
+  if (linkedMode === 'incorrect_review' && linkedAttemptId > 0) {
+    incorrectReviewAttemptId = linkedAttemptId;
+  }
+
+  const { questions } = await API.questions(incorrectReviewAttemptId);
+  allQuestions = questions;
+  populateCategories();
+
+  if (incorrectReviewAttemptId) {
+    // Fixed practice set derived server-side from one exam attempt's wrong
+    // answers -- the normal filter/category/search/mode-switch UI doesn't
+    // apply here, so it's hidden rather than left in a confusing half-state.
+    document.getElementById('incorrectReviewBanner').style.display = 'block';
+    document.getElementById('fcSearch').style.display = 'none';
+    document.querySelector('.fc-toolbar').style.display = 'none';
+    document.getElementById('fcFilters').style.display = 'none';
+    currentFilter = 'all';
+    document.getElementById('incorrectReviewSummary').textContent =
+      `${allQuestions.length} question${allQuestions.length === 1 ? '' : 's'} you missed on this exam attempt.`;
+    refreshIncorrectReviewStatus();
+  } else if (linkedCategory && allQuestions.some(q => q.category === linkedCategory)) {
     currentCategory = linkedCategory;
     document.getElementById('fcCategorySelect').value = linkedCategory;
     currentFilter = linkedFilter === 'due' ? 'due' : 'all';

@@ -11,6 +11,22 @@ $userStmt = $pdo->prepare('SELECT service_now_url FROM users WHERE id = ?');
 $userStmt->execute([$uid]);
 $serviceNowUrl = $userStmt->fetchColumn() ?: null;
 
+// Optional Incorrect Review mode: restrict to whatever this user got wrong
+// on a specific exam attempt, derived server-side (never trust a
+// client-supplied ID list) from exam_answers rather than any client input.
+$attemptId = (int)($_GET['attemptId'] ?? 0);
+$restrictToIds = null;
+if ($attemptId > 0) {
+    $attemptStmt = $pdo->prepare('SELECT id FROM exam_attempts WHERE id = ? AND user_id = ?');
+    $attemptStmt->execute([$attemptId, $uid]);
+    if (!$attemptStmt->fetch()) {
+        json_error('Attempt not found', 404);
+    }
+    $wrongStmt = $pdo->prepare('SELECT question_id FROM exam_answers WHERE attempt_id = ? AND is_correct = 0');
+    $wrongStmt->execute([$attemptId]);
+    $restrictToIds = array_flip(array_map('intval', $wrongStmt->fetchAll(PDO::FETCH_COLUMN)));
+}
+
 $questions = $pdo->query(
     'SELECT id, source, orig_num, question_text, choose_n, category, explanation, wrong_answer_notes, confidence, walkthrough FROM questions ORDER BY id'
 )->fetchAll();
@@ -43,6 +59,9 @@ $now = date('Y-m-d H:i:s');
 $out = [];
 foreach ($questions as $q) {
     $qid = (int)$q['id'];
+    if ($restrictToIds !== null && !isset($restrictToIds[$qid])) {
+        continue;
+    }
     $p = $progress[$qid] ?? null;
     $out[] = [
         'id' => $qid,

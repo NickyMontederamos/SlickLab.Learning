@@ -143,9 +143,17 @@
     examScreen.style.display = 'none';
     resultsScreen.style.display = 'block';
 
+    const { headline, message, cta } = ResultsMessage.buildResultsMessage(result);
+    const ctaHtml = cta
+      ? `
+        ${message ? `<p style="margin-top:16px;">${escapeHtml(message)}</p>` : ''}
+        <p${message ? '' : ' style="margin-top:16px;"'}><a class="btn" href="${escapeHtml(cta.href)}">${escapeHtml(cta.label)}</a></p>
+      `
+      : '';
+
     const scoreCard = document.getElementById('scoreCard');
     scoreCard.innerHTML = `
-      <h1>${result.passed ? 'You passed! 🎉' : 'Not quite there yet'}</h1>
+      <h1>${headline}</h1>
       ${auto ? '<p class="notice">Time expired — your exam was submitted automatically.</p>' : ''}
       <div class="stat-grid">
         <div class="stat-box"><div class="num">${result.correctCount}/${result.total}</div><div class="label">Correct</div></div>
@@ -153,6 +161,7 @@
         <div class="stat-box"><div class="num">${result.passPercent}%</div><div class="label">Pass Mark</div></div>
         <div class="stat-box"><div class="num" style="color:${result.passed ? 'var(--success)' : 'var(--danger)'}">${result.passed ? 'PASS' : 'FAIL'}</div><div class="label">Result</div></div>
       </div>
+      ${ctaHtml}
     `;
 
     document.getElementById('reviewList').innerHTML = result.review.map((r, i) => {
@@ -198,21 +207,30 @@
   const resumeSection = document.getElementById('resumeSection');
   const newExamSection = document.getElementById('newExamSection');
 
+  function enterActiveAttempt(active) {
+    attemptId = active.attemptId;
+    questions = active.questions;
+    remainingSeconds = active.remainingSeconds;
+    answers = loadLocalAnswers();
+    enterExamScreen();
+  }
+
   const active = await API.examActive();
-  if (active.active) {
+  if (active.active && active.attemptKind === 'mini') {
+    // A mini-exam is started server-side (from the flashcards readiness
+    // prompt) then the browser is sent straight here -- jump right in
+    // instead of making the user click "Resume" on their own freshly
+    // generated exam, which would read oddly ("resume" implies they'd
+    // already started it themselves).
+    enterActiveAttempt(active);
+  } else if (active.active) {
     resumeSection.style.display = 'block';
     newExamSection.style.display = 'none';
     const mins = Math.floor(active.remainingSeconds / 60);
     document.getElementById('resumeInfo').textContent =
       `${active.totalQuestions} questions, ${mins} minute(s) remaining`;
 
-    document.getElementById('resumeBtn').addEventListener('click', () => {
-      attemptId = active.attemptId;
-      questions = active.questions;
-      remainingSeconds = active.remainingSeconds;
-      answers = loadLocalAnswers();
-      enterExamScreen();
-    });
+    document.getElementById('resumeBtn').addEventListener('click', () => enterActiveAttempt(active));
 
     document.getElementById('startNewInsteadBtn').addEventListener('click', () => {
       resumeSection.style.display = 'none';

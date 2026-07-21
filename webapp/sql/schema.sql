@@ -63,7 +63,11 @@ CREATE TABLE IF NOT EXISTS exam_attempts (
     score_percent DECIMAL(5,2) NOT NULL DEFAULT 0,
     passed TINYINT(1) NOT NULL DEFAULT 0,
     status ENUM('in_progress','completed','abandoned') NOT NULL DEFAULT 'in_progress',
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    parent_attempt_id INT UNSIGNED NULL,
+    attempt_kind ENUM('full','mini') NOT NULL DEFAULT 'full',
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (parent_attempt_id) REFERENCES exam_attempts(id) ON DELETE CASCADE,
+    INDEX idx_exam_attempts_parent (parent_attempt_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS exam_answers (

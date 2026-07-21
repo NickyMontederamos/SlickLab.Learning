@@ -2,6 +2,7 @@
 require __DIR__ . '/../config/bootstrap.php';
 require __DIR__ . '/../lib/exam_grading.php';
 require __DIR__ . '/../lib/walkthrough.php';
+require __DIR__ . '/../lib/incorrect_review.php';
 
 $uid = require_login();
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -92,6 +93,7 @@ $insAns = $pdo->prepare(
 );
 
 $correctCount = 0;
+$incorrectCount = 0;
 $review = [];
 
 foreach ($questions as $q) {
@@ -103,6 +105,8 @@ foreach ($questions as $q) {
     $isCorrect = csa_is_answer_correct($selected, $correctLetters);
     if ($isCorrect) {
         $correctCount++;
+    } else {
+        $incorrectCount++;
     }
 
     $insAns->execute([
@@ -133,8 +137,13 @@ foreach ($questions as $q) {
 }
 
 $total = count($questions);
-$passPercent = csa_config()['exam']['pass_percent'];
-['scorePercent' => $scorePercent, 'passed' => $passed] = csa_compute_exam_score($correctCount, $total, (float)$passPercent);
+$examConfig = csa_config()['exam'];
+$passPercent = csa_pass_percent_for_kind(
+    $attempt['attempt_kind'],
+    (float)$examConfig['pass_percent'],
+    (float)($examConfig['mini_pass_percent'] ?? 80)
+);
+['scorePercent' => $scorePercent, 'passed' => $passed] = csa_compute_exam_score($correctCount, $total, $passPercent);
 
 $upd = $pdo->prepare(
     "UPDATE exam_attempts SET submitted_at = NOW(), correct_count = ?, score_percent = ?, passed = ?, status = 'completed'
@@ -148,8 +157,11 @@ json_out([
     'attemptId' => $attemptId,
     'total' => $total,
     'correctCount' => $correctCount,
+    'incorrectCount' => $incorrectCount,
     'scorePercent' => $scorePercent,
     'passed' => $passed,
     'passPercent' => $passPercent,
+    'attemptKind' => $attempt['attempt_kind'],
+    'parentAttemptId' => $attempt['parent_attempt_id'] !== null ? (int)$attempt['parent_attempt_id'] : null,
     'review' => $review,
 ]);

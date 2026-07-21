@@ -87,6 +87,12 @@
 <div class="container">
   <h1>Flashcards <span class="muted" style="font-size:1rem;">(review mode &mdash; the <a href="exam.html">Mock Exam</a> is the real test)</span></h1>
 
+  <div id="incorrectReviewBanner" class="card" style="display:none; margin-bottom:16px; text-align:center;">
+    <h2 style="margin-top:0;">Incorrect Answers Review</h2>
+    <p class="muted" id="incorrectReviewSummary"></p>
+    <div id="incorrectReviewReadyBox"></div>
+  </div>
+
   <input type="text" id="fcSearch" placeholder="Search questions, options, explanations...">
 
   <div class="fc-toolbar">

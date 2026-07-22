@@ -5,16 +5,49 @@ require __DIR__ . '/../lib/leaderboard.php';
 require_login();
 $pdo = csa_db();
 
-// Best score + most recent activity per user.
+// Most recent activity per user -- deliberately spans every attempt kind
+// (mock exam, topic quiz, block quiz) plus flashcards, since "last activity"
+// means overall engagement, not specifically mock-exam activity.
 $rows = $pdo->query(
     "SELECT u.id, u.username,
-            MAX(a.score_percent) AS best_score,
             MAX(a.submitted_at) AS last_exam_at,
             (SELECT MAX(last_reviewed_at) FROM flashcard_progress fp WHERE fp.user_id = u.id) AS last_flashcard_at
      FROM users u
      LEFT JOIN exam_attempts a ON a.user_id = u.id AND a.status = 'completed'
      GROUP BY u.id, u.username"
 )->fetchAll();
+
+// Best score is scoped to Full Mock Exam attempts only (attempt_kind='full')
+// -- unlike "last activity" above, this component of the points formula
+// should mean literally "your best Full Mock Exam score", not the best of
+// any quiz type. Picked in PHP rather than SQL (MAX + a correlated subquery)
+// since the whole dataset is a handful of rows for a ~7-person group; ties
+// break toward the larger exam, since 100% on 25 questions and 100% on the
+// full 274-question bank aren't equally meaningful.
+$bestFullExamByUser = []; // userId => ['percent', 'correct', 'total']
+foreach (
+    $pdo->query(
+        "SELECT user_id, score_percent, correct_count, total_questions
+         FROM exam_attempts
+         WHERE attempt_kind = 'full' AND status = 'completed'"
+    )->fetchAll() as $row
+) {
+    $userId = (int)$row['user_id'];
+    $existing = $bestFullExamByUser[$userId] ?? null;
+    $percent = (float)$row['score_percent'];
+    $total = (int)$row['total_questions'];
+    if (
+        $existing === null
+        || $percent > $existing['percent']
+        || ($percent === $existing['percent'] && $total > $existing['total'])
+    ) {
+        $bestFullExamByUser[$userId] = [
+            'percent' => $percent,
+            'correct' => (int)$row['correct_count'],
+            'total' => $total,
+        ];
+    }
+}
 
 // Weakest category per user (lowest accuracy with at least 3 answers).
 $catStmt = $pdo->prepare(
@@ -76,12 +109,12 @@ foreach ($rows as $r) {
     }
 
     $bs = $battleStats[(int)$r['id']] ?? ['played' => 0, 'wins' => 0];
-    $bestScore = $r['best_score'] !== null ? (float)$r['best_score'] : null;
+    $bestExam = $bestFullExamByUser[(int)$r['id']] ?? null;
     $topicsMastered = $topicsMasteredByUser[(int)$r['id']] ?? 0;
 
     $points = csa_compute_leaderboard_points([
         'topicsMastered' => $topicsMastered,
-        'bestExamPercent' => $bestScore,
+        'bestExamPercent' => $bestExam['percent'] ?? null,
         'battleWins' => $bs['wins'],
         'battlesPlayed' => $bs['played'],
     ]);
@@ -89,7 +122,9 @@ foreach ($rows as $r) {
 
     $out[] = [
         'username' => $r['username'],
-        'bestScore' => $bestScore,
+        'bestExamPercent' => $bestExam['percent'] ?? null,
+        'bestExamCorrect' => $bestExam['correct'] ?? null,
+        'bestExamTotal' => $bestExam['total'] ?? null,
         'lastActivity' => $lastActivity,
         'weakestCategory' => $weak ? $weak['category'] : null,
         'battlesPlayed' => $bs['played'],

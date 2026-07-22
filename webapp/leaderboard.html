@@ -55,10 +55,11 @@
         <td>${row.rankEmoji} ${row.rankLabel}</td>
         <td>${row.points} pts</td>
         <td>${row.topicsMastered}</td>
+        <td>${row.bestExamPercent !== null ? row.bestExamPercent + '% (' + row.bestExamCorrect + '/' + row.bestExamTotal + ')' : '—'}</td>
         <td>${row.lastActivity ? new Date(row.lastActivity).toLocaleDateString() : 'No activity yet'}</td>
         <td>${row.weakestCategory || '—'}</td>
       </tr>`).join('');
-    wrap.innerHTML = `<table class="history"><thead><tr><th>#</th><th>User</th><th>Rank</th><th>Points</th><th>Topics Mastered</th><th>Last Activity</th><th>Weakest Category</th></tr></thead><tbody>${rows}</tbody></table>`;
+    wrap.innerHTML = `<table class="history"><thead><tr><th>#</th><th>User</th><th>Rank</th><th>Points</th><th>Topics Mastered</th><th>Best Mock Exam</th><th>Last Activity</th><th>Weakest Category</th></tr></thead><tbody>${rows}</tbody></table>`;
   }
 
   const battleWrap = document.getElementById('battleLeaderboardWrap');

@@ -20,6 +20,10 @@ const CSA_TABLES = [
     'topics',
     'topic_lesson_images',
     'topic_block_content',
+    'battle_beta_rooms',
+    'battle_beta_participants',
+    'battle_beta_answers',
+    'battle_beta_reactions',
 ];
 
 /**

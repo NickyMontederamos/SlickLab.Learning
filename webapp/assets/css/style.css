@@ -16,9 +16,9 @@
   /* Neon accent trio, pulled from the Quiz Battle marquee mockup --
      layered on top of the existing blue accent (which stays the primary
      interactive color for links/focus states) rather than replacing it. */
-  --neon-gold: #ffb020;
-  --neon-cyan: #2fd8ff;
-  --neon-magenta: #ff3ec8;
+  --neon-gold: #ff9900;
+  --neon-cyan: #00f3ff;
+  --neon-magenta: #ff007f;
   --neon-gradient: linear-gradient(90deg, var(--neon-gold), var(--neon-cyan), var(--neon-magenta));
 }
 

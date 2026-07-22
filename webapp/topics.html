@@ -76,6 +76,21 @@
     background: rgba(47,191,113,0.14); color: var(--success);
     border: 1px solid rgba(47,191,113,0.35);
   }
+  /* 13-frame coin-spin strip (208x16, 16px frames): step through with a
+     percentage background-position so the sprite scales cleanly if the
+     display size ever changes, then keep pixel edges crisp when scaled up. */
+  .coin-icon {
+    display: inline-block; width: 14px; height: 14px;
+    background-image: url('assets/icons/coin-sheet.webp');
+    background-repeat: no-repeat;
+    background-size: 1300% 100%;
+    image-rendering: pixelated;
+    animation: coinSpin 0.9s steps(12) infinite;
+  }
+  @keyframes coinSpin {
+    from { background-position-x: 0%; }
+    to { background-position-x: 100%; }
+  }
   @keyframes passedCardBreathe {
     0%, 100% { box-shadow: 0 0 0 1px rgba(47,191,113,0.18), 0 0 20px rgba(47,191,113,0.14); }
     50% { box-shadow: 0 0 0 1px rgba(47,191,113,0.32), 0 0 30px rgba(47,191,113,0.26); }
@@ -88,6 +103,7 @@
     .topic-card.passed { animation: none; }
     .topic-card.passed::before { animation: none; }
     .topic-card.passed::after { animation: none; }
+    .coin-icon { animation: none; background-position: 0 0; }
   }
   .lock-icon { font-size: 1.4rem; }
 

@@ -1,5 +1,6 @@
 <?php
 require __DIR__ . '/../config/bootstrap.php';
+require __DIR__ . '/../lib/leaderboard.php';
 
 require_login();
 $pdo = csa_db();
@@ -49,6 +50,19 @@ foreach ($battleRows as $b) {
     }
 }
 
+// Topics mastered (Gate Check passed) per user, for the blended Rank/Points score.
+$topicsMasteredByUser = []; // userId => count
+foreach (
+    $pdo->query(
+        "SELECT user_id, COUNT(DISTINCT topic_id) AS topics_mastered
+         FROM exam_attempts
+         WHERE attempt_kind = 'topic' AND passed = 1 AND topic_id IS NOT NULL
+         GROUP BY user_id"
+    )->fetchAll() as $row
+) {
+    $topicsMasteredByUser[(int)$row['user_id']] = (int)$row['topics_mastered'];
+}
+
 $out = [];
 foreach ($rows as $r) {
     $catStmt->execute([$r['id']]);
@@ -62,19 +76,33 @@ foreach ($rows as $r) {
     }
 
     $bs = $battleStats[(int)$r['id']] ?? ['played' => 0, 'wins' => 0];
+    $bestScore = $r['best_score'] !== null ? (float)$r['best_score'] : null;
+    $topicsMastered = $topicsMasteredByUser[(int)$r['id']] ?? 0;
+
+    $points = csa_compute_leaderboard_points([
+        'topicsMastered' => $topicsMastered,
+        'bestExamPercent' => $bestScore,
+        'battleWins' => $bs['wins'],
+        'battlesPlayed' => $bs['played'],
+    ]);
+    $rank = csa_rank_for_points($points);
 
     $out[] = [
         'username' => $r['username'],
-        'bestScore' => $r['best_score'] !== null ? (float)$r['best_score'] : null,
+        'bestScore' => $bestScore,
         'lastActivity' => $lastActivity,
         'weakestCategory' => $weak ? $weak['category'] : null,
         'battlesPlayed' => $bs['played'],
         'battlesWon' => $bs['wins'],
+        'topicsMastered' => $topicsMastered,
+        'points' => $points,
+        'rankLabel' => $rank['label'],
+        'rankEmoji' => $rank['emoji'],
     ];
 }
 
 usort($out, function ($a, $b) {
-    return ($b['bestScore'] ?? -1) <=> ($a['bestScore'] ?? -1);
+    return $b['points'] <=> $a['points'];
 });
 
 $byBattles = $out;

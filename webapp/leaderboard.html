@@ -17,7 +17,8 @@
   <p class="muted">Everyone studying for the CSA exam together. See who might need a nudge.</p>
 
   <div class="card">
-    <h2>Solo Mock Exam</h2>
+    <h2>🏆 Overall Rank</h2>
+    <p class="muted" style="margin-top:-6px;">Points blend Topics mastered, Mock Exam best score, and Quiz Battle activity into one score.</p>
     <div id="leaderboardWrap"><p class="muted">Loading...</p></div>
   </div>
 
@@ -51,11 +52,13 @@
       <tr${i === 0 ? ' class="top-row"' : ''}>
         <td>${medals[i] || i + 1}</td>
         <td>${row.username}</td>
-        <td>${row.bestScore !== null ? row.bestScore + '%' : '—'}</td>
+        <td>${row.rankEmoji} ${row.rankLabel}</td>
+        <td>${row.points} pts</td>
+        <td>${row.topicsMastered}</td>
         <td>${row.lastActivity ? new Date(row.lastActivity).toLocaleDateString() : 'No activity yet'}</td>
         <td>${row.weakestCategory || '—'}</td>
       </tr>`).join('');
-    wrap.innerHTML = `<table class="history"><thead><tr><th>#</th><th>User</th><th>Best Score</th><th>Last Activity</th><th>Weakest Category</th></tr></thead><tbody>${rows}</tbody></table>`;
+    wrap.innerHTML = `<table class="history"><thead><tr><th>#</th><th>User</th><th>Rank</th><th>Points</th><th>Topics Mastered</th><th>Last Activity</th><th>Weakest Category</th></tr></thead><tbody>${rows}</tbody></table>`;
   }
 
   const battleWrap = document.getElementById('battleLeaderboardWrap');

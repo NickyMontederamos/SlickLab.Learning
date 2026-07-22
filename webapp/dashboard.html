@@ -87,7 +87,7 @@
 
   <div class="grid-2">
     <div class="card">
-      <h2>🎯 Top Mock Exam Scores</h2>
+      <h2>🏆 Top Overall Ranks</h2>
       <div id="examLeaderboardWidget"><p class="muted">Loading...</p></div>
     </div>
     <div class="card">
@@ -157,8 +157,8 @@
     window.location.href = 'index.html';
   });
 
-  const [{ questions }, { attempts }, { categories }, { streak, last30 }, { leaderboard, battleLeaderboard }] = await Promise.all([
-    API.questions(), API.examHistory(), API.categoryStats(), API.activity(), API.leaderboard(),
+  const [{ questions }, { attempts }, { categories }, { streak, last30 }, { leaderboard, battleLeaderboard }, { topics }] = await Promise.all([
+    API.questions(), API.examHistory(), API.categoryStats(), API.activity(), API.leaderboard(), API.topics(),
   ]);
 
   const escapeHtml = (str) => {
@@ -167,18 +167,19 @@
     return div.innerHTML;
   };
 
-  // Top solo Mock Exam scores, same idea as the battle widget below — surface it
-  // on the dashboard instead of making people dig into the separate leaderboard page.
+  // Top overall ranks (points blend Topics mastered + Mock Exam best score +
+  // Quiz Battle activity) — surface it on the dashboard instead of making
+  // people dig into the separate leaderboard page.
   const examWidget = document.getElementById('examLeaderboardWidget');
-  const topScorers = (leaderboard || []).filter(r => r.bestScore !== null).slice(0, 5);
-  if (!topScorers.length) {
-    examWidget.innerHTML = '<p class="muted">No completed Mock Exams yet — be the first!</p>';
+  const topRanked = (leaderboard || []).filter(r => r.points > 0).slice(0, 5);
+  if (!topRanked.length) {
+    examWidget.innerHTML = '<p class="muted">No activity yet — be the first!</p>';
   } else {
     const medals = ['🥇', '🥈', '🥉'];
-    examWidget.innerHTML = topScorers.map((row, i) => `
+    examWidget.innerHTML = topRanked.map((row, i) => `
       <div class="leaderboard-row${i === 0 ? ' top' : ''}">
         <span>${medals[i] || `${i + 1}.`} ${escapeHtml(row.username)}</span>
-        <span class="muted">${row.bestScore}%</span>
+        <span class="muted">${row.rankEmoji} ${row.rankLabel} &middot; ${row.points} pts</span>
       </div>`).join('') + '<p style="margin-top:10px;"><a href="leaderboard.html">View full leaderboard &rarr;</a></p>';
   }
 
@@ -199,13 +200,15 @@
 
   const known = questions.filter(q => q.progress === 'known').length;
   const review = questions.filter(q => q.progress === 'review').length;
-  const bestScore = attempts.length ? Math.max(...attempts.map(a => a.scorePercent)) : null;
+  const myRank = (leaderboard || []).find(r => r.username === me.username) || null;
+  const topicsMastered = (topics || []).filter(t => t.passed).length;
 
   document.getElementById('statGrid').innerHTML = `
     <div class="stat-box"><div class="num" style="color:var(--neon-cyan)">${questions.length}</div><div class="label">Total Questions</div></div>
     <div class="stat-box"><div class="num" style="color:var(--success)">${known}</div><div class="label">Known</div></div>
     <div class="stat-box"><div class="num" style="color:var(--warning)">${review}</div><div class="label">Needs Review</div></div>
-    <div class="stat-box"><div class="num" style="color:var(--neon-magenta)">${bestScore !== null ? bestScore + '%' : '—'}</div><div class="label">Best Exam Score</div></div>
+    <div class="stat-box"><div class="num" style="color:var(--neon-magenta)">${myRank ? myRank.rankEmoji + ' ' + myRank.rankLabel : '—'}</div><div class="label">${myRank ? myRank.points + ' pts' : 'Rank'}</div></div>
+    <div class="stat-box"><div class="num" style="color:var(--neon-gold)">${topicsMastered} / ${topics.length}</div><div class="label">Topics Mastered</div></div>
   `;
 
   // Countdown + suggested pace

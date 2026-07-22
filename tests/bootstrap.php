@@ -9,3 +9,4 @@ require __DIR__ . '/../webapp/lib/walkthrough.php';
 require __DIR__ . '/../webapp/lib/incorrect_review.php';
 require __DIR__ . '/../webapp/lib/topic_quiz.php';
 require __DIR__ . '/../webapp/lib/upload_validation.php';
+require __DIR__ . '/../webapp/lib/leaderboard.php';

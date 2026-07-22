@@ -17,6 +17,9 @@
     const grid = document.getElementById('topicGrid');
     grid.innerHTML = topics.map((t) => {
       const vm = TopicProgress.buildTopicCardViewModel(t, { isOpen: t.id === openTopicId });
+      // A quick-start shortcut lets a user jump straight into the next quiz
+      // from the grid instead of always going through the lesson panel first.
+      const showQuickStart = t.unlocked && !t.passed && vm.ctaEnabled;
       return `
         <div class="${vm.cardClass}" data-topic-id="${t.id}">
           <div class="topic-num">Topic ${t.sortOrder}</div>
@@ -26,13 +29,41 @@
             <span>${escapeHtml(vm.metaText)}</span>
             ${!t.unlocked ? '<span class="lock-icon">&#128274;</span>' : ''}
           </div>
-          ${t.passed ? '<span class="mastered-badge">&#127942; Mastered</span>' : ''}
+          ${t.passed ? '<span class="mastered-badge"><span class="coin-icon"></span> Mastered</span>' : ''}
+          ${showQuickStart ? `<button type="button" class="btn secondary card-quick-start-btn" data-topic-id="${t.id}" data-action="${vm.action}" style="margin-top:10px; padding:5px 12px; font-size:0.8rem; width:100%;">${escapeHtml(vm.ctaLabel)}</button>` : ''}
         </div>`;
     }).join('');
 
     grid.querySelectorAll('.topic-card').forEach((card) => {
       card.addEventListener('click', () => openLesson(parseInt(card.dataset.topicId, 10)));
     });
+
+    grid.querySelectorAll('.card-quick-start-btn').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        startQuiz(parseInt(btn.dataset.topicId, 10), btn.dataset.action, btn);
+      });
+    });
+  }
+
+  async function startQuiz(topicId, action, btn) {
+    const originalLabel = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Starting...';
+    try {
+      if (action === 'block') {
+        await API.topicBlockStart(topicId);
+      } else {
+        // 'gate' and 'lab' both start the same Gate Check / Final
+        // Verification endpoint -- a thin topic has no blocks to gate behind.
+        await API.topicQuizStart(topicId);
+      }
+      window.location.href = 'exam.html';
+    } catch (err) {
+      notify('Could not start the quiz: ' + err.message);
+      btn.disabled = false;
+      btn.textContent = originalLabel;
+    }
   }
 
   function findBlockContent(blockContent, blockNumber, contentType) {
@@ -144,27 +175,10 @@
     renderGrid();
   });
 
-  document.getElementById('startTopicQuizBtn').addEventListener('click', async (e) => {
+  document.getElementById('startTopicQuizBtn').addEventListener('click', (e) => {
     if (!openTopicId) return;
     const btn = e.target;
-    const action = btn.dataset.action; // 'block' | 'gate' | 'lab' -- set in openLesson()
-    const originalLabel = btn.textContent;
-    btn.disabled = true;
-    btn.textContent = 'Starting...';
-    try {
-      if (action === 'block') {
-        await API.topicBlockStart(openTopicId);
-      } else {
-        // 'gate' and 'lab' both start the same Gate Check / Final
-        // Verification endpoint -- a thin topic has no blocks to gate behind.
-        await API.topicQuizStart(openTopicId);
-      }
-      window.location.href = 'exam.html';
-    } catch (err) {
-      notify('Could not start the quiz: ' + err.message);
-      btn.disabled = false;
-      btn.textContent = originalLabel;
-    }
+    startQuiz(openTopicId, btn.dataset.action, btn); // action set in openLesson()
   });
 
   const { topics: fetchedTopics } = await API.topics();

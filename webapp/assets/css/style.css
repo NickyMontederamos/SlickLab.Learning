@@ -326,7 +326,8 @@ table.history tbody tr.top-row td:first-child { font-weight: 700; }
   box-shadow: 0 0 12px rgba(255,153,0,0.12) inset;
 }
 
-.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+.stat-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 16px; }
+@media (max-width: 900px) { .stat-grid { grid-template-columns: repeat(3, 1fr); } }
 @media (max-width: 640px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
 .stat-box { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: center; transition: border-color 0.18s ease, transform 0.18s ease; }
 .stat-box:hover { border-color: #35486f; transform: translateY(-2px); }

@@ -118,7 +118,20 @@
       ).join('');
       renderPipelineSections(topic, lesson);
     } catch (e) {
-      document.getElementById('lessonBody').textContent = 'Could not load lesson content.';
+      // Usually transient (a flaky response from the host, not a real
+      // content problem) -- give a way to retry instead of a dead end.
+      const lessonBody = document.getElementById('lessonBody');
+      lessonBody.innerHTML = '';
+      const msg = document.createElement('span');
+      msg.textContent = 'Could not load lesson content. ';
+      const retryBtn = document.createElement('button');
+      retryBtn.type = 'button';
+      retryBtn.className = 'btn secondary';
+      retryBtn.style.cssText = 'padding:4px 12px; font-size:0.85rem; margin-left:6px;';
+      retryBtn.textContent = 'Try Again';
+      retryBtn.addEventListener('click', () => openLesson(topicId));
+      lessonBody.appendChild(msg);
+      lessonBody.appendChild(retryBtn);
     }
 
     panel.scrollIntoView({ behavior: 'smooth', block: 'start' });

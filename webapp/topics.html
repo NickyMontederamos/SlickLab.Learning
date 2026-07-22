@@ -44,8 +44,28 @@
   .topic-mastery-bar { background: var(--bg-elevated); border-radius: 6px; height: 6px; overflow: hidden; margin: 8px 0; }
   .topic-mastery-fill { height: 100%; background: var(--neon-gradient); }
   .topic-card .topic-meta { font-size: 0.78rem; color: var(--text-dim); display: flex; justify-content: space-between; }
-  .topic-card.passed { border-color: var(--success); }
-  .topic-card.passed::before { opacity: 0.9; }
+  .topic-card.passed {
+    border-color: var(--success);
+    box-shadow: 0 0 0 1px rgba(47,191,113,0.18), 0 0 22px rgba(47,191,113,0.14);
+  }
+  .topic-card.passed::before {
+    opacity: 0.9;
+    background: linear-gradient(90deg, var(--success), #7ee8b0, var(--success));
+    background-size: 200% 100%;
+    animation: cardBorderShimmer 6s linear infinite;
+  }
+  .topic-card.passed::after {
+    content: '\2713';
+    position: absolute; top: 10px; right: 10px;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--success); color: #06210f;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.8rem; font-weight: 900; line-height: 1;
+    box-shadow: 0 0 10px rgba(47,191,113,0.55);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .topic-card.passed::before { animation: none; }
+  }
   .lock-icon { font-size: 1.4rem; }
 
   #lessonPanel { display: none; }

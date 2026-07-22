@@ -26,6 +26,7 @@
             <span>${escapeHtml(vm.metaText)}</span>
             ${!t.unlocked ? '<span class="lock-icon">&#128274;</span>' : ''}
           </div>
+          ${t.passed ? '<span class="mastered-badge">&#127942; Mastered</span>' : ''}
         </div>`;
     }).join('');
 

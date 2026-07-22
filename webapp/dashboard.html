@@ -16,6 +16,14 @@
     33% { box-shadow: 0 0 18px rgba(255,107,107,0.4); border-color: #ff6b6b; }
     66% { box-shadow: 0 0 18px rgba(255,215,0,0.4); border-color: #ffd700; }
   }
+  .battle-header {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+  }
+  .battle-header img {
+    width: 26px; height: 26px; object-fit: contain;
+    filter: drop-shadow(0 0 6px rgba(0,243,255,0.5));
+  }
+  .battle-header img.mirror { transform: scaleX(-1); }
   .new-badge {
     position: absolute; top: -10px; right: 16px;
     background: linear-gradient(135deg, #ff6b6b, #ff3d3d);
@@ -68,7 +76,11 @@
 
   <div class="card battle-card-highlight">
     <span class="new-badge">NEW!</span>
-    <h2>⚔️ Quiz Battle</h2>
+    <h2 class="battle-header">
+      <img src="assets/icons/rpg-sword.webp" alt="" class="mirror">
+      Quiz Battle
+      <img src="assets/icons/rpg-sword.webp" alt="">
+    </h2>
     <p class="muted">Challenge your teammates head-to-head &mdash; create a room, invite the crew, and race to answer live.</p>
     <a class="btn secondary" href="battle.html">Quiz Battle</a>
   </div>

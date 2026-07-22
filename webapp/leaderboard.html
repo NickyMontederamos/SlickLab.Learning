@@ -46,14 +46,16 @@
   if (!leaderboard.length) {
     wrap.innerHTML = '<p class="muted">No accounts yet.</p>';
   } else {
-    const rows = leaderboard.map(row => `
-      <tr>
+    const medals = ['🥇', '🥈', '🥉'];
+    const rows = leaderboard.map((row, i) => `
+      <tr${i === 0 ? ' class="top-row"' : ''}>
+        <td>${medals[i] || i + 1}</td>
         <td>${row.username}</td>
         <td>${row.bestScore !== null ? row.bestScore + '%' : '—'}</td>
         <td>${row.lastActivity ? new Date(row.lastActivity).toLocaleDateString() : 'No activity yet'}</td>
         <td>${row.weakestCategory || '—'}</td>
       </tr>`).join('');
-    wrap.innerHTML = `<table class="history"><thead><tr><th>User</th><th>Best Score</th><th>Last Activity</th><th>Weakest Category</th></tr></thead><tbody>${rows}</tbody></table>`;
+    wrap.innerHTML = `<table class="history"><thead><tr><th>#</th><th>User</th><th>Best Score</th><th>Last Activity</th><th>Weakest Category</th></tr></thead><tbody>${rows}</tbody></table>`;
   }
 
   const battleWrap = document.getElementById('battleLeaderboardWrap');
@@ -61,13 +63,15 @@
   if (!withBattles.length) {
     battleWrap.innerHTML = '<p class="muted">No Quiz Battles played yet — start one from the dashboard!</p>';
   } else {
-    const rows = withBattles.map(row => `
-      <tr>
+    const medals = ['🥇', '🥈', '🥉'];
+    const rows = withBattles.map((row, i) => `
+      <tr${i === 0 ? ' class="top-row"' : ''}>
+        <td>${medals[i] || i + 1}</td>
         <td>${row.username}</td>
         <td>${row.battlesWon}</td>
         <td>${row.battlesPlayed}</td>
       </tr>`).join('');
-    battleWrap.innerHTML = `<table class="history"><thead><tr><th>User</th><th>Wins</th><th>Battles Played</th></tr></thead><tbody>${rows}</tbody></table>`;
+    battleWrap.innerHTML = `<table class="history"><thead><tr><th>#</th><th>User</th><th>Wins</th><th>Battles Played</th></tr></thead><tbody>${rows}</tbody></table>`;
   }
 })();
 </script>

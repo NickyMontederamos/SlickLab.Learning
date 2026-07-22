@@ -164,7 +164,7 @@
   } else {
     const medals = ['🥇', '🥈', '🥉'];
     examWidget.innerHTML = topScorers.map((row, i) => `
-      <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border);">
+      <div class="leaderboard-row${i === 0 ? ' top' : ''}">
         <span>${medals[i] || `${i + 1}.`} ${escapeHtml(row.username)}</span>
         <span class="muted">${row.bestScore}%</span>
       </div>`).join('') + '<p style="margin-top:10px;"><a href="leaderboard.html">View full leaderboard &rarr;</a></p>';
@@ -179,7 +179,7 @@
   } else {
     const medals = ['🥇', '🥈', '🥉'];
     battleWidget.innerHTML = topBattlers.map((row, i) => `
-      <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border);">
+      <div class="leaderboard-row${i === 0 ? ' top' : ''}">
         <span>${medals[i] || `${i + 1}.`} ${escapeHtml(row.username)}</span>
         <span class="muted">${row.battlesWon} win${row.battlesWon === 1 ? '' : 's'} / ${row.battlesPlayed} played</span>
       </div>`).join('') + '<p style="margin-top:10px;"><a href="leaderboard.html">View full leaderboard &rarr;</a></p>';
@@ -190,10 +190,10 @@
   const bestScore = attempts.length ? Math.max(...attempts.map(a => a.scorePercent)) : null;
 
   document.getElementById('statGrid').innerHTML = `
-    <div class="stat-box"><div class="num">${questions.length}</div><div class="label">Total Questions</div></div>
+    <div class="stat-box"><div class="num" style="color:var(--neon-cyan)">${questions.length}</div><div class="label">Total Questions</div></div>
     <div class="stat-box"><div class="num" style="color:var(--success)">${known}</div><div class="label">Known</div></div>
     <div class="stat-box"><div class="num" style="color:var(--warning)">${review}</div><div class="label">Needs Review</div></div>
-    <div class="stat-box"><div class="num">${bestScore !== null ? bestScore + '%' : '—'}</div><div class="label">Best Exam Score</div></div>
+    <div class="stat-box"><div class="num" style="color:var(--neon-magenta)">${bestScore !== null ? bestScore + '%' : '—'}</div><div class="label">Best Exam Score</div></div>
   `;
 
   // Countdown + suggested pace

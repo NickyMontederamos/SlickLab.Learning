@@ -8,18 +8,30 @@
 <style>
   .topic-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; margin-bottom: 20px; }
   .topic-card {
+    position: relative;
     background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
-    padding: 16px; cursor: pointer; transition: border-color 0.15s ease;
+    padding: 16px; cursor: pointer; overflow: hidden;
+    transition: border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
   }
-  .topic-card:hover { border-color: var(--accent); }
+  .topic-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: var(--neon-gradient); opacity: 0;
+    transition: opacity 0.18s ease;
+  }
+  .topic-card:not(.locked):hover {
+    border-color: #35486f; transform: translateY(-3px);
+    box-shadow: 0 10px 24px rgba(0,0,0,0.35);
+  }
+  .topic-card:not(.locked):hover::before { opacity: 0.9; }
   .topic-card.active { border-color: var(--accent); border-width: 2px; }
   .topic-card.locked { opacity: 0.55; cursor: not-allowed; }
   .topic-card .topic-num { font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em; }
   .topic-card h3 { margin: 4px 0 8px; font-size: 1.05rem; }
   .topic-mastery-bar { background: var(--bg-elevated); border-radius: 6px; height: 6px; overflow: hidden; margin: 8px 0; }
-  .topic-mastery-fill { height: 100%; background: var(--success); }
+  .topic-mastery-fill { height: 100%; background: var(--neon-gradient); }
   .topic-card .topic-meta { font-size: 0.78rem; color: var(--text-dim); display: flex; justify-content: space-between; }
   .topic-card.passed { border-color: var(--success); }
+  .topic-card.passed::before { opacity: 0.9; }
   .lock-icon { font-size: 1.4rem; }
 
   #lessonPanel { display: none; }

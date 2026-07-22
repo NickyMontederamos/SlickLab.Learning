@@ -16,6 +16,12 @@
 
   let currentTopicId = null;
 
+  // Kept in sync with webapp/lib/upload_validation.php's server-side limits
+  // (the actual authority) -- this only exists to give instant feedback
+  // before a huge/wrong-type file is ever sent over the wire.
+  const MAX_UPLOAD_BYTES = 2 * 1024 * 1024;
+  const ALLOWED_EXTENSIONS = ['png', 'jpg', 'jpeg'];
+
   async function loadTopic(topicId) {
     currentTopicId = topicId;
     document.getElementById('saveStatus').textContent = '';
@@ -81,6 +87,11 @@
     const file = fileInput.files[0];
     if (!file) {
       statusEl.textContent = 'Choose a file first.';
+      return;
+    }
+    const clientError = UploadValidation.validateFileClientSide(file, ALLOWED_EXTENSIONS, MAX_UPLOAD_BYTES);
+    if (clientError) {
+      statusEl.textContent = clientError;
       return;
     }
     statusEl.textContent = 'Uploading...';

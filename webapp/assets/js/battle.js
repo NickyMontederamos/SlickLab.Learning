@@ -5,7 +5,7 @@
   // Cast lineup on the intro banner — lit up in color when that teammate is
   // currently online (see pollIntroLobby's 'joined' class toggle below), a black
   // silhouette otherwise. Missing files just quietly disappear.
-  const CREW_USERNAMES = ['rod.francos.batino', 'n.r.montederamos', 'gil.c.l.dacles', 'bea.monica.a.angeles', 'john.paul.c.mendoza', 'nichole.vine.alburo'];
+  const CREW_USERNAMES = ['rod.francos.batino', 'n.r.montederamos', 'gil.c.l.dacles', 'bea.monica.a.angeles', 'john.paul.c.mendoza', 'nichole.vine.alburo', 'c.f.capao'];
   const stageCastEl = document.getElementById('stageCast');
   if (stageCastEl) {
     stageCastEl.innerHTML = CREW_USERNAMES.map(u =>

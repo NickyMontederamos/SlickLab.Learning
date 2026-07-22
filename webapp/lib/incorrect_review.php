@@ -32,11 +32,16 @@ function csa_compute_review_readiness(array $statuses, float $threshold = 0.8): 
 }
 
 /**
- * Mini-exam attempts use a stricter pass bar than the full exam -- they're
- * a readiness gate over material the user has already reviewed once, not a
- * first pass through the whole bank.
+ * Mini-exam and topic-quiz attempts use a stricter pass bar than the full
+ * exam -- they're readiness gates over material the user has already
+ * reviewed once (or is actively learning), not a first pass through the
+ * whole bank. Keyed by attempt_kind rather than one param per kind so a
+ * future kind doesn't require another positional argument here.
+ *
+ * @param array<string,float> $percentsByKind e.g. ['mini' => 80.0, 'topic' => 80.0]
+ * @param float               $default        Used for 'full' and any kind not present in $percentsByKind.
  */
-function csa_pass_percent_for_kind(string $attemptKind, float $fullPassPercent, float $miniPassPercent): float
+function csa_pass_percent_for_kind(string $attemptKind, array $percentsByKind, float $default = 70.0): float
 {
-    return $attemptKind === 'mini' ? $miniPassPercent : $fullPassPercent;
+    return $percentsByKind[$attemptKind] ?? $default;
 }

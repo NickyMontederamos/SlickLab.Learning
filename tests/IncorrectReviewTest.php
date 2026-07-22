@@ -69,13 +69,23 @@ final class IncorrectReviewTest extends TestCase
 
     // --- csa_pass_percent_for_kind() ---
 
-    public function testFullAttemptUsesFullPassPercent(): void
+    public function testFullAttemptUsesTheDefaultPassPercent(): void
     {
-        $this->assertSame(70.0, csa_pass_percent_for_kind('full', 70.0, 80.0));
+        $this->assertSame(70.0, csa_pass_percent_for_kind('full', ['mini' => 80.0, 'topic' => 80.0], 70.0));
     }
 
-    public function testMiniAttemptUsesMiniPassPercent(): void
+    public function testMiniAttemptUsesItsOwnPassPercent(): void
     {
-        $this->assertSame(80.0, csa_pass_percent_for_kind('mini', 70.0, 80.0));
+        $this->assertSame(80.0, csa_pass_percent_for_kind('mini', ['mini' => 80.0, 'topic' => 80.0], 70.0));
+    }
+
+    public function testTopicAttemptUsesItsOwnPassPercent(): void
+    {
+        $this->assertSame(80.0, csa_pass_percent_for_kind('topic', ['mini' => 80.0, 'topic' => 80.0], 70.0));
+    }
+
+    public function testUnrecognizedKindFallsBackToTheDefault(): void
+    {
+        $this->assertSame(70.0, csa_pass_percent_for_kind('bogus', ['mini' => 80.0, 'topic' => 80.0], 70.0));
     }
 }

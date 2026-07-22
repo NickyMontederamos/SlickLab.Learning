@@ -43,6 +43,27 @@ const API = (() => {
     }
   }
 
+  // Multipart upload path (admin topic-image upload) -- bypasses attempt()'s
+  // JSON-body handling since a file body isn't JSON, and skips the
+  // auto-retry loop since retrying would re-send the whole file.
+  async function callMultipart(path, formData) {
+    const res = await fetch(`api/${path}`, {
+      method: 'POST',
+      credentials: 'same-origin',
+      body: formData,
+    });
+    let data;
+    try {
+      data = await res.json();
+    } catch (e) {
+      throw new Error('The server sent back an unexpected response. Please try again.');
+    }
+    if (!res.ok) {
+      throw new Error((data && data.error) || `Request failed (${res.status})`);
+    }
+    return data;
+  }
+
   return {
     me: () => call('me.php'),
     login: (payload) => call('login.php', { method: 'POST', body: payload }),
@@ -84,6 +105,20 @@ const API = (() => {
     battleKick: (roomId, userId) => call('battle_kick.php', { method: 'POST', body: { roomId, userId } }),
     battleEnd: (roomId) => call('battle_end.php', { method: 'POST', body: { roomId } }),
     battleQuit: (roomId) => call('battle_quit.php', { method: 'POST', body: { roomId } }),
+    topics: () => call('topics.php'),
+    topicLesson: (topicId) => call(`topic_lesson.php?topicId=${topicId}`),
+    topicQuizStart: (topicId) => call('topic_quiz_start.php', { method: 'POST', body: { topicId } }),
+    adminSaveLesson: (topicId, lessonBodyMd, lessonStatus) =>
+      call('admin_topic_lesson_save.php', { method: 'POST', body: { topicId, lessonBodyMd, lessonStatus } }),
+    adminUploadTopicImage: (topicId, file, altText) => {
+      const formData = new FormData();
+      formData.append('topicId', topicId);
+      formData.append('image', file);
+      if (altText) formData.append('altText', altText);
+      return callMultipart('admin_topic_lesson_upload_image.php', formData);
+    },
+    adminDeleteTopicImage: (imageId) =>
+      call('admin_topic_lesson_delete_image.php', { method: 'POST', body: { imageId } }),
   };
 })();
 

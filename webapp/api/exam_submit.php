@@ -140,8 +140,11 @@ $total = count($questions);
 $examConfig = csa_config()['exam'];
 $passPercent = csa_pass_percent_for_kind(
     $attempt['attempt_kind'],
-    (float)$examConfig['pass_percent'],
-    (float)($examConfig['mini_pass_percent'] ?? 80)
+    [
+        'mini' => (float)($examConfig['mini_pass_percent'] ?? 80),
+        'topic' => (float)($examConfig['topic_pass_percent'] ?? 80),
+    ],
+    (float)$examConfig['pass_percent']
 );
 ['scorePercent' => $scorePercent, 'passed' => $passed] = csa_compute_exam_score($correctCount, $total, $passPercent);
 
@@ -153,6 +156,23 @@ $upd->execute([$correctCount, $scorePercent, $passed ? 1 : 0, $attemptId]);
 
 $pdo->commit();
 
+// Topic-quiz attempts additionally report which topic unlocks next, so the
+// frontend can show an unlock CTA without a second round-trip.
+$topicId = null;
+$nextTopicId = null;
+if ($attempt['attempt_kind'] === 'topic' && $attempt['topic_id'] !== null) {
+    $topicId = (int)$attempt['topic_id'];
+    $sortStmt = $pdo->prepare('SELECT sort_order FROM topics WHERE id = ?');
+    $sortStmt->execute([$topicId]);
+    $sortOrder = $sortStmt->fetchColumn();
+    if ($sortOrder !== false) {
+        $nextStmt = $pdo->prepare('SELECT id FROM topics WHERE sort_order = ?');
+        $nextStmt->execute([(int)$sortOrder + 1]);
+        $nextId = $nextStmt->fetchColumn();
+        $nextTopicId = $nextId !== false ? (int)$nextId : null;
+    }
+}
+
 json_out([
     'attemptId' => $attemptId,
     'total' => $total,
@@ -163,5 +183,8 @@ json_out([
     'passPercent' => $passPercent,
     'attemptKind' => $attempt['attempt_kind'],
     'parentAttemptId' => $attempt['parent_attempt_id'] !== null ? (int)$attempt['parent_attempt_id'] : null,
+    'topicId' => $topicId,
+    'nextTopicId' => $nextTopicId,
+    'unlocked' => $attempt['attempt_kind'] === 'topic' ? $passed : null,
     'review' => $review,
 ]);

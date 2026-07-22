@@ -1,0 +1,18 @@
+# Defense-in-depth for admin-uploaded topic lesson images: this directory
+# must never execute uploaded content as a script, even if extension
+# validation and content-type sniffing in admin_topic_lesson_upload_image.php
+# were ever bypassed. Best-effort -- untested whether InfinityFree's shared
+# hosting honors per-directory .htaccess overrides (flagged in
+# SOLUTIONS_LOG.md, 2026-07-22 entry); the primary defenses are the
+# extension allow-list, finfo content sniffing, and randomized filenames in
+# the upload endpoint itself, which don't depend on this file working.
+
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>
+<IfModule !mod_php.c>
+    RemoveHandler .php .php3 .php4 .php5 .phtml
+    RemoveType .php .php3 .php4 .php5 .phtml
+</IfModule>
+
+Options -ExecCGI -Indexes

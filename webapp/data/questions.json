@@ -40,7 +40,7 @@
       "C"
     ],
     "explanation": "Roles control which applications and modules a user can see/access; ACLs control record/field-level data access.",
-    "category": "Security & Roles",
+    "category": "Security & ACL",
     "confidence": "high",
     "wrongAnswerNotes": "Access Control Rules is the tempting pick since it sounds like a permission mechanism, but ACLs govern data access, not menu/module visibility."
   },
@@ -1444,7 +1444,7 @@
       "B"
     ],
     "explanation": "Service Level Agreements track how long a task has been open against an allotted time.",
-    "category": "ITSM/SLA",
+    "category": "ITSM & SLA",
     "confidence": "high",
     "wrongAnswerNotes": "'Task Escalation Clock' isn't a real ServiceNow feature name — the actual mechanism is a Service Level Agreement."
   },
@@ -2954,7 +2954,7 @@
       "D"
     ],
     "explanation": "A task is created, worked on, and eventually moved to a closed state.",
-    "category": "ITSM",
+    "category": "ITSM & SLA",
     "confidence": "high",
     "wrongAnswerNotes": "'Event' is a trigger mechanism, not a thing that itself gets worked on and closed — that lifecycle describes a task."
   },
@@ -3549,7 +3549,7 @@
       "B"
     ],
     "explanation": "JavaScript is the scripting language used throughout ServiceNow.",
-    "category": "Scripting",
+    "category": "Scripting & Automation",
     "confidence": "high",
     "wrongAnswerNotes": "The other languages (C++, PHP, Python) are all real languages but none are what ServiceNow scripting actually uses — it's JavaScript throughout."
   },
@@ -3795,7 +3795,7 @@
       "B"
     ],
     "explanation": "Events can be generated from a Business Rule or a Workflow.",
-    "category": "Scripting",
+    "category": "Scripting & Automation",
     "confidence": "medium",
     "wrongAnswerNotes": "'Knowledge article publication' sounds like a plausible event source, but the two documented ways to generate an Event are from a Business Rule or a Workflow."
   },
@@ -4112,7 +4112,7 @@
       "A"
     ],
     "explanation": "The Event Log holds generated Events; the Event Registry is the table of Event definitions.",
-    "category": "Scripting",
+    "category": "Scripting & Automation",
     "confidence": "high",
     "wrongAnswerNotes": "The option inventing a time-based/integration-based distinction isn't real — the actual difference is Event Log (generated events) vs Event Registry (event type definitions)."
   },
@@ -4548,7 +4548,7 @@
       "E"
     ],
     "explanation": "Predictive Intelligence can auto-populate Priority/Category based on Short Description.",
-    "category": "Automation/AI",
+    "category": "Scripting & Automation",
     "confidence": "high",
     "wrongAnswerNotes": "Assignment Rules route records to groups based on conditions — they don't analyze free text to auto-fill Priority/Category the way Predictive Intelligence does."
   },
@@ -4929,7 +4929,7 @@
       "A"
     ],
     "explanation": "Assignment Rules auto-allocate high-priority requests to the appropriate group/member.",
-    "category": "ITSM",
+    "category": "ITSM & SLA",
     "confidence": "high",
     "wrongAnswerNotes": "Predictive Intelligence can suggest values but the specific feature that automatically ROUTES requests to a group/member is an Assignment Rule."
   },
@@ -5778,7 +5778,7 @@
       "D"
     ],
     "explanation": "'My Groups Work' only shows tasks for groups the logged-in user is actually a member of. Being set as the group's manager doesn't automatically add someone as a member, so if the manager isn't personally in the Network and Hardware groups, their tasks won't appear on this list.",
-    "category": "Security & Roles",
+    "category": "Security & ACL",
     "confidence": "high",
     "wrongAnswerNotes": "An empty manager field would be unrelated to what a member sees on their own work list; the itil role controls broader ITSM access, not specifically which groups show on 'My Groups Work'; membership in the Service Desk group is irrelevant since this list is scoped to the Network and Hardware groups, not Service Desk."
   },

@@ -46,3 +46,14 @@ function require_login(): int
     }
     return $uid;
 }
+
+function require_admin(): int
+{
+    $uid = require_login();
+    $stmt = csa_db()->prepare('SELECT is_admin FROM users WHERE id = ?');
+    $stmt->execute([$uid]);
+    if (!(int)$stmt->fetchColumn()) {
+        json_error('Forbidden', 403);
+    }
+    return $uid;
+}

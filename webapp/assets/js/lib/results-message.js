@@ -14,9 +14,36 @@
     root.ResultsMessage = factory();
   }
 })(typeof window !== 'undefined' ? window : globalThis, function () {
-  // @param result { attemptId, attemptKind, passed, incorrectCount, parentAttemptId }
+  // @param result { attemptId, attemptKind, passed, incorrectCount, parentAttemptId, topicId, nextTopicId }
   function buildResultsMessage(result) {
     var isMini = result.attemptKind === 'mini';
+    var isTopic = result.attemptKind === 'topic';
+
+    if (isTopic && result.passed) {
+      return {
+        headline: result.nextTopicId
+          ? 'Topic mastered! Next topic unlocked. 🎉'
+          : "Topic mastered! You've completed every topic. 🎉",
+        message: null,
+        cta: {
+          type: 'next-topic',
+          href: result.nextTopicId ? 'topics.html?topicId=' + result.nextTopicId : 'topics.html',
+          label: result.nextTopicId ? 'Continue to Next Topic' : 'Back to Topics',
+        },
+      };
+    }
+
+    if (isTopic && !result.passed) {
+      return {
+        headline: "Not quite — let's review this topic again.",
+        message: null,
+        cta: {
+          type: 'retry-topic',
+          href: 'topics.html?topicId=' + result.topicId,
+          label: 'Back to the Lesson',
+        },
+      };
+    }
 
     if (isMini && result.passed) {
       return {

@@ -66,3 +66,35 @@ test('buildResultsMessage: mini exam branch is checked before incorrectCount, so
   });
   assert.equal(r.message, null);
 });
+
+test('buildResultsMessage: topic quiz pass with a next topic links straight into it', () => {
+  const r = ResultsMessage.buildResultsMessage({
+    attemptId: 20, attemptKind: 'topic', passed: true, topicId: 3, nextTopicId: 4,
+  });
+  assert.equal(r.headline, 'Topic mastered! Next topic unlocked. 🎉');
+  assert.deepEqual(r.cta, { type: 'next-topic', href: 'topics.html?topicId=4', label: 'Continue to Next Topic' });
+});
+
+test('buildResultsMessage: topic quiz pass on the last topic has no next topic to link to', () => {
+  const r = ResultsMessage.buildResultsMessage({
+    attemptId: 21, attemptKind: 'topic', passed: true, topicId: 22, nextTopicId: null,
+  });
+  assert.equal(r.headline, "Topic mastered! You've completed every topic. 🎉");
+  assert.deepEqual(r.cta, { type: 'next-topic', href: 'topics.html', label: 'Back to Topics' });
+});
+
+test('buildResultsMessage: topic quiz fail routes back to the same topic, not the next one', () => {
+  const r = ResultsMessage.buildResultsMessage({
+    attemptId: 22, attemptKind: 'topic', passed: false, topicId: 5, nextTopicId: null,
+  });
+  assert.equal(r.headline, "Not quite — let's review this topic again.");
+  assert.equal(r.cta.href, 'topics.html?topicId=5');
+});
+
+test('buildResultsMessage: topic branch is checked before mini/full, so a topic attempt never falls through to exam-review messaging', () => {
+  const r = ResultsMessage.buildResultsMessage({
+    attemptId: 23, attemptKind: 'topic', passed: false, topicId: 6, incorrectCount: 3,
+  });
+  assert.equal(r.message, null);
+  assert.notEqual(r.cta.type, 'review-incorrect');
+});

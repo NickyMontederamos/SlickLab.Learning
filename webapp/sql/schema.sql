@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
     last_active_at DATETIME NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     service_now_url VARCHAR(255) NULL,
+    is_admin TINYINT(1) NOT NULL DEFAULT 0,
     UNIQUE KEY uniq_username (username)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -50,6 +51,33 @@ CREATE TABLE IF NOT EXISTS flashcard_progress (
     UNIQUE KEY uniq_user_question (user_id, question_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS topics (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    slug VARCHAR(60) NOT NULL UNIQUE,
+    name VARCHAR(80) NOT NULL,
+    category_key VARCHAR(60) NOT NULL UNIQUE,
+    sort_order SMALLINT UNSIGNED NOT NULL,
+    lesson_body_md MEDIUMTEXT NULL,
+    lesson_status ENUM('placeholder','draft','published') NOT NULL DEFAULT 'placeholder',
+    updated_by INT UNSIGNED NULL,
+    updated_at DATETIME NULL,
+    FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL,
+    INDEX idx_topics_sort_order (sort_order)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS topic_lesson_images (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    topic_id INT UNSIGNED NOT NULL,
+    file_path VARCHAR(255) NOT NULL,
+    alt_text VARCHAR(255) NULL,
+    sort_order SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+    uploaded_by INT UNSIGNED NULL,
+    uploaded_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (topic_id) REFERENCES topics(id) ON DELETE CASCADE,
+    FOREIGN KEY (uploaded_by) REFERENCES users(id) ON DELETE SET NULL,
+    INDEX idx_topic_lesson_images_topic (topic_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS exam_attempts (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     user_id INT UNSIGNED NOT NULL,
@@ -64,9 +92,11 @@ CREATE TABLE IF NOT EXISTS exam_attempts (
     passed TINYINT(1) NOT NULL DEFAULT 0,
     status ENUM('in_progress','completed','abandoned') NOT NULL DEFAULT 'in_progress',
     parent_attempt_id INT UNSIGNED NULL,
-    attempt_kind ENUM('full','mini') NOT NULL DEFAULT 'full',
+    attempt_kind ENUM('full','mini','topic') NOT NULL DEFAULT 'full',
+    topic_id INT UNSIGNED NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (parent_attempt_id) REFERENCES exam_attempts(id) ON DELETE CASCADE,
+    FOREIGN KEY (topic_id) REFERENCES topics(id) ON DELETE SET NULL,
     INDEX idx_exam_attempts_parent (parent_attempt_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -140,3 +170,29 @@ CREATE TABLE IF NOT EXISTS battle_reactions (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (room_id) REFERENCES battle_rooms(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Fixed topic taxonomy for the Gamified Topic Learning Loop (Phase 1), one
+-- row per consolidated category. sort_order also drives topic-unlock gating.
+INSERT INTO topics (slug, name, category_key, sort_order) VALUES
+    ('navigation', 'Navigation', 'Navigation', 1),
+    ('platform-admin', 'Platform Admin', 'Platform Admin', 2),
+    ('users-groups-roles', 'Users, Groups & Roles', 'Users/Groups/Roles', 3),
+    ('security-acl', 'Security & ACL', 'Security & ACL', 4),
+    ('forms', 'Forms', 'Forms', 5),
+    ('lists-filters', 'Lists & Filters', 'Lists & Filters', 6),
+    ('data-model', 'Data Model', 'Data Model', 7),
+    ('cmdb', 'CMDB', 'CMDB', 8),
+    ('business-logic', 'Business Logic', 'Business Logic', 9),
+    ('update-sets', 'Update Sets', 'Update Sets', 10),
+    ('service-catalog', 'Service Catalog', 'Service Catalog', 11),
+    ('knowledge-management', 'Knowledge Management', 'Knowledge Management', 12),
+    ('notifications', 'Notifications', 'Notifications', 13),
+    ('reporting', 'Reporting', 'Reporting', 14),
+    ('data-import', 'Data Import', 'Data Import', 15),
+    ('flow-designer', 'Flow Designer', 'Flow Designer', 16),
+    ('scripting-automation', 'Scripting & Automation', 'Scripting & Automation', 17),
+    ('collaboration', 'Collaboration', 'Collaboration', 18),
+    ('virtual-agent', 'Virtual Agent', 'Virtual Agent', 19),
+    ('itsm-sla', 'ITSM & SLA', 'ITSM & SLA', 20),
+    ('testing-atf', 'Testing/ATF', 'Testing/ATF', 21),
+    ('agile-vtb', 'Agile/VTB', 'Agile/VTB', 22);

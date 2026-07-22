@@ -4,7 +4,7 @@ Live web app (flashcards, Mock Exams, Focus Coach, Rapid Drill) for CSA certific
 
 ## Local Toolchain
 Nothing is on PATH — use full paths:
-- PHP: `C:\Users\ndmon\tools\php\php.exe` (8.3.32, portable install; `mbstring` extension enabled 2026-07-18, was off by default)
+- PHP: `C:\Users\ndmon\tools\php\php.exe` (8.3.32, portable install; `mbstring` extension enabled 2026-07-18, `fileinfo` enabled 2026-07-22 — both off by default on this portable install. Restart the PHP dev server after editing php.ini; it doesn't hot-reload extensions.)
 - MariaDB: `C:\Users\ndmon\tools\mariadb\` (portable, used for local dev DB — not yet wired into the test suite)
 - PHPUnit: `C:\Users\ndmon\tools\phpunit\phpunit.phar` (11.5.56, standalone — no Composer on this machine)
 - Node: on PATH already (v24.15.0). JS tests use Node's **built-in** test runner (`node:test` + `node:assert`) — no npm install, no package.json, deliberately zero new dependencies for a project that otherwise has none.

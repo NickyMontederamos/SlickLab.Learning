@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Topics | SlickLab.Digital</title>
+<link rel="stylesheet" href="assets/css/style.css">
+<style>
+  .topic-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; margin-bottom: 20px; }
+  .topic-card {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 16px; cursor: pointer; transition: border-color 0.15s ease;
+  }
+  .topic-card:hover { border-color: var(--accent); }
+  .topic-card.active { border-color: var(--accent); border-width: 2px; }
+  .topic-card.locked { opacity: 0.55; cursor: not-allowed; }
+  .topic-card .topic-num { font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em; }
+  .topic-card h3 { margin: 4px 0 8px; font-size: 1.05rem; }
+  .topic-mastery-bar { background: var(--bg-elevated); border-radius: 6px; height: 6px; overflow: hidden; margin: 8px 0; }
+  .topic-mastery-fill { height: 100%; background: var(--success); }
+  .topic-card .topic-meta { font-size: 0.78rem; color: var(--text-dim); display: flex; justify-content: space-between; }
+  .topic-card.passed { border-color: var(--success); }
+  .lock-icon { font-size: 1.4rem; }
+
+  #lessonPanel { display: none; }
+  #lessonImages { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
+  #lessonImages img { max-width: 260px; border-radius: 8px; border: 1px solid var(--border); }
+  #lessonBody { white-space: pre-wrap; line-height: 1.6; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand"><a href="dashboard.html" style="color:inherit;">SlickLab.Digital <span class="brand-accent">| CebuPips | OG Exclusive</span></a></div>
+  <div class="topbar-actions">
+    <a href="admin_content.html" id="adminLink" style="display:none;">Admin</a>
+    <a href="dashboard.html">&larr; Dashboard</a>
+  </div>
+</div>
+
+<div class="container">
+  <h1>Topics <span class="muted" style="font-size:1rem;">work through the syllabus one topic at a time</span></h1>
+  <p class="muted" id="topicsIntro">Loading...</p>
+
+  <div class="topic-grid" id="topicGrid"></div>
+
+  <div class="card" id="lessonPanel">
+    <div class="fc-label" id="lessonCategory"></div>
+    <h2 id="lessonTitle"></h2>
+    <p class="muted" id="lessonStatusNote"></p>
+    <div id="lessonBody"></div>
+    <div id="lessonImages"></div>
+    <div class="btn-row" style="margin-top:16px;">
+      <button class="btn secondary" id="closeLessonBtn" type="button">Close</button>
+      <button class="btn" id="startTopicQuizBtn" type="button">Start Topic Quiz</button>
+    </div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="footer-brand">SlickLab.Digital | CebuPips | OG Exclusive</div>
+  <p>Built for the crew grinding toward CSA certification together.</p>
+  <p class="footer-wish">Wishing Gil, Digi, JP, Bea, Nikki Vhine &amp; Nicky all the best on the CSA exam — you've got this! 🚀</p>
+  <p class="muted">Study hard, trust your prep, and go pass that exam on the first try.</p>
+</footer>
+
+<script src="assets/js/api.js"></script>
+<script src="assets/js/lib/topic-progress.js"></script>
+<script src="assets/js/topics.js"></script>
+</body>
+</html>

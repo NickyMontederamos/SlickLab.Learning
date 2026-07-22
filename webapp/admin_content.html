@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin: Topic Content | SlickLab.Digital</title>
+<link rel="stylesheet" href="assets/css/style.css">
+<style>
+  #adminDenied { display: none; }
+  #adminEditor { display: none; }
+  #lessonBodyInput {
+    width: 100%; min-height: 220px; background: var(--bg); border: 1px solid var(--border);
+    color: var(--text); border-radius: 8px; padding: 10px 12px; font-size: 0.92rem;
+    resize: vertical; font-family: inherit; line-height: 1.5;
+  }
+  .admin-image-grid { display: flex; flex-wrap: wrap; gap: 12px; margin: 14px 0; }
+  .admin-image-item { position: relative; }
+  .admin-image-item img { width: 160px; height: 110px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); }
+  .admin-image-item button {
+    position: absolute; top: 4px; right: 4px; background: rgba(20,20,20,0.75); color: #fff;
+    border: none; border-radius: 6px; padding: 3px 7px; font-size: 0.75rem; cursor: pointer;
+  }
+  #uploadStatus { font-size: 0.85rem; color: var(--text-dim); min-height: 18px; margin-top: 6px; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand"><a href="dashboard.html" style="color:inherit;">SlickLab.Digital <span class="brand-accent">| CebuPips | OG Exclusive</span></a></div>
+  <div class="topbar-actions">
+    <a href="topics.html">&larr; Topics</a>
+  </div>
+</div>
+
+<div class="container">
+  <h1>Admin: Topic Content</h1>
+  <p class="muted">Write each topic's lesson and add real screenshots of your ServiceNow Australia instance. Nothing here is auto-generated — you're the only source of truth for this content.</p>
+
+  <div class="card" id="adminDenied">
+    <p>You don't have access to this page.</p>
+  </div>
+
+  <div id="adminEditor">
+    <div class="card">
+      <label for="topicSelect">Topic</label>
+      <select id="topicSelect"></select>
+    </div>
+
+    <div class="card">
+      <div class="btn-row" style="justify-content:space-between; align-items:center;">
+        <h2 style="margin:0;">Lesson text</h2>
+        <select id="lessonStatusSelect">
+          <option value="placeholder">Placeholder</option>
+          <option value="draft">Draft</option>
+          <option value="published">Published</option>
+        </select>
+      </div>
+      <textarea id="lessonBodyInput" placeholder="Write the lesson for this topic..."></textarea>
+      <div class="btn-row" style="margin-top:12px;">
+        <button class="btn" id="saveLessonBtn" type="button">Save Lesson</button>
+        <span id="saveStatus" class="muted"></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Screenshots</h2>
+      <div class="admin-image-grid" id="imageGrid"></div>
+      <div class="btn-row">
+        <input type="file" id="imageFileInput" accept="image/png,image/jpeg">
+        <input type="text" id="imageAltInput" placeholder="Alt text (optional)">
+        <button class="btn secondary" id="uploadImageBtn" type="button">Upload</button>
+      </div>
+      <div id="uploadStatus"></div>
+    </div>
+  </div>
+</div>
+
+<script src="assets/js/api.js"></script>
+<script src="assets/js/admin_content.js"></script>
+</body>
+</html>

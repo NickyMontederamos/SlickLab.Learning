@@ -40,7 +40,7 @@
     }
     grid.innerHTML = images.map((img) => `
       <div class="admin-image-item" data-image-id="${img.id}">
-        <img src="${escapeHtml(img.url)}" alt="${escapeHtml(img.altText || '')}">
+        <img src="${escapeHtml(img.url)}" alt="${escapeHtml(img.altText || '')}" loading="lazy">
         <button type="button" class="delete-image-btn" data-image-id="${img.id}">&#10005;</button>
       </div>
     `).join('');

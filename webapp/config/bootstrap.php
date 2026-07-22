@@ -3,11 +3,21 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/db.php';
 
+// Never leak stack traces/paths to users on the live site (production or
+// staging both live under slicklab.digital) -- errors still get logged,
+// just not echoed into the JSON response. Local dev keeps display on.
+$isLiveHost = strpos($_SERVER['HTTP_HOST'] ?? '', 'slicklab.digital') !== false;
+error_reporting(E_ALL);
+ini_set('display_errors', $isLiveHost ? '0' : '1');
+ini_set('log_errors', '1');
+
 if (session_status() === PHP_SESSION_NONE) {
     session_set_cookie_params([
         'lifetime' => 0,
         'path' => '/',
         'samesite' => 'Lax',
+        'secure' => !empty($_SERVER['HTTPS']),
+        'httponly' => true,
     ]);
     session_start();
 }

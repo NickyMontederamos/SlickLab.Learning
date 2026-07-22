@@ -9,7 +9,7 @@
   const stageCastEl = document.getElementById('stageCast');
   if (stageCastEl) {
     stageCastEl.innerHTML = CREW_USERNAMES.map(u =>
-      `<img src="assets/user_images/${encodeURIComponent(u)}-removebg-preview.png" data-username="${u}" alt="" onerror="this.remove();">`
+      `<img src="assets/user_images/${encodeURIComponent(u)}-removebg-preview.webp" data-username="${u}" alt="" onerror="this.remove();">`
     ).join('');
   }
 
@@ -18,7 +18,7 @@
   const lobbyStageCastEl = document.getElementById('lobbyStageCast');
   if (lobbyStageCastEl) {
     lobbyStageCastEl.innerHTML = CREW_USERNAMES.map(u =>
-      `<img src="assets/user_images/${encodeURIComponent(u)}-removebg-preview.png" data-username="${u}" alt="" onerror="this.remove();">`
+      `<img src="assets/user_images/${encodeURIComponent(u)}-removebg-preview.webp" data-username="${u}" alt="" onerror="this.remove();">`
     ).join('');
   }
 
@@ -56,8 +56,8 @@
     size = size || 32;
     const safeName = escapeHtml(username);
     const encoded = encodeURIComponent(username);
-    const illustratedSrc = `assets/user_images/${encoded}-removebg-preview.png`;
-    const photoSrc = `assets/user_images/${encoded}.png`;
+    const illustratedSrc = `assets/user_images/${encoded}-removebg-preview.webp`;
+    const photoSrc = `assets/user_images/${encoded}.webp`;
     // Three-tier fallback: illustrated cutout (contain, so the character isn't
     // cropped oddly) -> plain photo (cover) -> generated colored-initials circle.
     return `<span class="avatar-wrap" style="width:${size}px;height:${size}px;">

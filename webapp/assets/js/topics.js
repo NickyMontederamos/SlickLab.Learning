@@ -61,7 +61,7 @@
       document.getElementById('lessonBody').textContent = lesson.lessonBodyMd
         || 'No lesson content yet. You can still take the quiz below.';
       document.getElementById('lessonImages').innerHTML = lesson.images.map((img) =>
-        `<img src="${escapeHtml(img.url)}" alt="${escapeHtml(img.altText || '')}">`
+        `<img src="${escapeHtml(img.url)}" alt="${escapeHtml(img.altText || '')}" loading="lazy">`
       ).join('');
     } catch (e) {
       document.getElementById('lessonBody').textContent = 'Could not load lesson content.';

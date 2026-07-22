@@ -97,7 +97,8 @@ CREATE TABLE IF NOT EXISTS exam_attempts (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (parent_attempt_id) REFERENCES exam_attempts(id) ON DELETE CASCADE,
     FOREIGN KEY (topic_id) REFERENCES topics(id) ON DELETE SET NULL,
-    INDEX idx_exam_attempts_parent (parent_attempt_id)
+    INDEX idx_exam_attempts_parent (parent_attempt_id),
+    INDEX idx_exam_attempts_user (user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS exam_answers (

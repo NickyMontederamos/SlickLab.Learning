@@ -9,7 +9,7 @@
     { key: 'speedster', icon: '⚡', name: 'The Speedster', tag: 'Overclock · Haste · Hyper-Drive', locked: false,
       note: 'Overclock: +3 pts answering within 1.5s. 50 pts: next correct answer is 1.5x. 75 pts: instant +8 points.' },
     { key: 'saboteur', icon: '🛠️', name: 'The Saboteur', tag: 'Malware · Corrupted Cache · Overwrite', locked: false,
-      note: 'Malware Injection: -1 pt per correct answer. 25 pts: next 2 wrong answers keep your streak. 75 pts: next correct answer is guaranteed max points.' },
+      note: 'Malware Injection: -1 pt per correct answer. 10 pts: next 2 wrong answers keep your streak. 75 pts: next correct answer is guaranteed max points.' },
     { key: 'tank', icon: '🛡️', name: 'The Tank', tag: 'Coming Soon', locked: true },
     { key: 'oracle', icon: '🔮', name: 'The Oracle', tag: 'Coming Soon', locked: true },
     { key: 'vampire', icon: '🩸', name: 'The Vampire', tag: 'Coming Soon', locked: true },
@@ -235,7 +235,7 @@
     }
     listEl.innerHTML = rooms.map(r => `
       <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border);">
-        <span>${escapeHtml(r.hostUsername)}'s room <span class="muted">(${r.participantCount}/${r.maxParticipants} players &middot; ${r.itemCount} questions${r.ttsEnabled ? ' &middot; 🔊 TTS' : ''})</span></span>
+        <span>${escapeHtml(r.hostUsername)}'s room <span class="muted">(${r.participantCount}/${r.maxParticipants} players &middot; race to ${r.winningScore} pts${r.ttsEnabled ? ' &middot; 🔊 TTS' : ''})</span></span>
         <button class="btn secondary" data-join-room="${r.roomId}" style="padding:6px 14px;">Join</button>
       </div>`).join('');
   }
@@ -287,12 +287,10 @@
   document.getElementById('createBtn').addEventListener('click', async () => {
     BattleSound.init();
     primeSpeech();
-    const itemCount = parseInt(document.getElementById('itemCountSelect').value, 10);
-    const winningScoreRaw = document.getElementById('winningScoreSelect').value;
-    const winningScore = winningScoreRaw ? parseInt(winningScoreRaw, 10) : null;
+    const winningScore = parseInt(document.getElementById('winningScoreSelect').value, 10);
     const ttsEnabled = document.getElementById('ttsEnabledCheckbox').checked;
     try {
-      const res = await API.battleBetaCreate(itemCount, winningScore, ttsEnabled);
+      const res = await API.battleBetaCreate(winningScore, ttsEnabled);
       roomId = res.roomId;
       enterLobby();
     } catch (e) {
@@ -306,7 +304,7 @@
     grid.innerHTML = CLASS_DEFS.map(c => `
       <div class="class-card ${c.key === myClassKey ? 'selected' : ''} ${c.locked ? 'locked' : ''}"
            data-class-key="${c.key}" data-locked="${c.locked}">
-        <div class="class-icon">${c.icon}</div>
+        <div class="${c.locked ? 'class-icon' : 'class-icon-framed ' + c.key}">${c.icon}</div>
         <div class="class-name">${escapeHtml(c.name)}</div>
         <div class="class-tag">${escapeHtml(c.tag)}</div>
       </div>`).join('');
@@ -456,7 +454,7 @@
   function renderMyAbilityPanel(meState) {
     if (!meState || !meState.classKey) return;
     const cls = CLASS_BY_KEY[meState.classKey];
-    document.getElementById('myClassLabel').textContent = `${cls ? cls.icon : ''} ${cls ? cls.name : meState.classKey}`;
+    document.getElementById('myClassLabel').innerHTML = `<span class="my-class-icon-framed ${meState.classKey}">${cls ? cls.icon : ''}</span>${cls ? escapeHtml(cls.name) : escapeHtml(meState.classKey)}`;
     document.getElementById('myTierLabel').textContent = `Tier ${meState.unlockedTier}/75`;
     document.getElementById('myManaFill').style.width = `${meState.mana}%`;
 
@@ -519,7 +517,7 @@
     displaySeconds = state.remainingSeconds + (state.me && state.me.pendingExtraSeconds ? state.me.pendingExtraSeconds : 0);
     document.getElementById('battleTimer').textContent = String(displaySeconds);
     document.getElementById('battleTimer').classList.toggle('low', displaySeconds <= 5);
-    document.getElementById('battleProgressText').textContent = `Question ${state.currentIndex + 1} of ${state.itemCount}`;
+    document.getElementById('battleProgressText').textContent = `Question ${state.currentIndex + 1} · Racing to ${state.winningScore} pts`;
 
     renderMyAbilityPanel(state.me);
     renderPodiumRow(state.participants);
@@ -528,10 +526,25 @@
     if (state.previousReveal && state.currentIndex > lastRenderedIndex) {
       const r = state.previousReveal;
       const correctLine = r.question.options.filter(o => o.correct).map(o => `${o.letter}. ${o.text}`).join(', ');
-      const who = r.answers.map(a => `${avatarHtml(a.username, 18)} ${escapeHtml(a.username)}: ${a.correct ? `✓ +${a.points}` : '✗'} (${a.selected.join(',') || 'no answer'})`).join(' &middot; ');
+      const sorted = [...r.answers].sort((a, b) => b.points - a.points);
+      const rows = sorted.map(a => {
+        const resultText = a.correct
+          ? `✓ +${a.points}`
+          : (a.selected.length ? `✗ ${escapeHtml(a.selected.join(', '))}` : '— no answer');
+        return `
+          <div class="reveal-answer-row">
+            <span style="display:flex; align-items:center; gap:8px;">${avatarHtml(a.username, 24)}${escapeHtml(a.username)}</span>
+            <span class="reveal-answer-points ${a.correct ? 'correct' : 'wrong'}">${resultText}</span>
+          </div>`;
+      }).join('');
       const banner = document.getElementById('revealBanner');
       banner.style.display = 'block';
-      banner.innerHTML = `<div class="correct-line">Previous answer: ${escapeHtml(correctLine)}</div><p class="muted">${who}</p>${REACTION_ROW_HTML}`;
+      banner.innerHTML = `
+        <div class="reveal-header">Previous Question</div>
+        <div class="reveal-correct-badge">✔ ${escapeHtml(correctLine)}</div>
+        <div class="reveal-answer-list">${rows}</div>
+        ${REACTION_ROW_HTML}
+      `;
     }
 
     (state.reactions || []).forEach(r => {

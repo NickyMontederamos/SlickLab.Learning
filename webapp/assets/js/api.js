@@ -105,8 +105,8 @@ const API = (() => {
     battleKick: (roomId, userId) => call('battle_kick.php', { method: 'POST', body: { roomId, userId } }),
     battleEnd: (roomId) => call('battle_end.php', { method: 'POST', body: { roomId } }),
     battleQuit: (roomId) => call('battle_quit.php', { method: 'POST', body: { roomId } }),
-    battleBetaCreate: (itemCount, winningScore, ttsEnabled) =>
-      call('battle_beta_create.php', { method: 'POST', body: { itemCount, winningScore, ttsEnabled } }),
+    battleBetaCreate: (winningScore, ttsEnabled) =>
+      call('battle_beta_create.php', { method: 'POST', body: { winningScore, ttsEnabled } }),
     battleBetaReact: (roomId, emoji) => call('battle_beta_react.php', { method: 'POST', body: { roomId, emoji } }),
     battleBetaJoinRoom: (roomId) => call('battle_beta_join.php', { method: 'POST', body: { roomId } }),
     battleBetaLobby: () => call('battle_beta_lobby.php'),

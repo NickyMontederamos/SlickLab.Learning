@@ -13,7 +13,7 @@ $online = $onlineStmt->fetchAll();
 
 $maxParticipants = csa_config()['battle']['max_participants'];
 $roomsStmt = $pdo->prepare(
-    "SELECT r.id, u.username AS host_username, r.item_count, r.tts_enabled,
+    "SELECT r.id, u.username AS host_username, r.winning_score, r.tts_enabled,
             (SELECT COUNT(*) FROM battle_beta_participants p WHERE p.room_id = r.id) AS participant_count
      FROM battle_beta_rooms r
      JOIN users u ON u.id = r.host_user_id
@@ -29,7 +29,7 @@ json_out([
     'openRooms' => array_map(fn($r) => [
         'roomId' => (int)$r['id'],
         'hostUsername' => $r['host_username'],
-        'itemCount' => (int)$r['item_count'],
+        'winningScore' => $r['winning_score'] !== null ? (int)$r['winning_score'] : null,
         'ttsEnabled' => (bool)$r['tts_enabled'],
         'participantCount' => (int)$r['participant_count'],
         'maxParticipants' => $maxParticipants,

@@ -192,7 +192,11 @@ $currentIndex = (int)$room['current_index'];
 $startedAt = strtotime($room['question_started_at']);
 $elapsed = time() - $startedAt;
 
-$lockQid = $questionIds[$currentIndex] ?? null;
+// No question-count limit in this beta -- the stored list is several
+// shuffled cycles of the full bank (comfortably longer than any realistic
+// game), and modulo indexing here means it truly cannot run out even in
+// the theoretical case a race went on long enough to reach the end of it.
+$lockQid = $questionIds[$currentIndex % $itemCount] ?? null;
 $lockSeconds = $lockQid !== null ? battle_beta_lock_seconds_for_question($pdo, $lockQid, $ttsEnabled) : 0.0;
 $totalWindow = $lockSeconds + $questionSeconds;
 
@@ -241,7 +245,9 @@ if ($needAdvance) {
     $winnerReached = $winningScore !== null && $topScore >= $winningScore;
     $nextIndex = $currentIndex + 1;
 
-    if ($winnerReached || $nextIndex >= $itemCount) {
+    // The ONLY way this battle ends is reaching the winning score -- there
+    // is deliberately no "ran out of questions" finish condition anymore.
+    if ($winnerReached) {
         $pdo->prepare("UPDATE battle_beta_rooms SET status = 'finished', finished_at = NOW() WHERE id = ? AND status = 'in_progress' AND current_index = ?")
             ->execute([$roomId, $currentIndex]);
     } else {
@@ -253,7 +259,7 @@ if ($needAdvance) {
     $currentIndex = (int)$room['current_index'];
     $startedAt = strtotime($room['question_started_at']);
     $elapsed = time() - $startedAt;
-    $lockQid = $questionIds[$currentIndex] ?? null;
+    $lockQid = $questionIds[$currentIndex % $itemCount] ?? null;
     $lockSeconds = $lockQid !== null ? battle_beta_lock_seconds_for_question($pdo, $lockQid, $ttsEnabled) : 0.0;
     $totalWindow = $lockSeconds + $questionSeconds;
 }
@@ -265,12 +271,12 @@ if ($room['status'] === 'finished') {
 $remaining = max(0, $totalWindow - $elapsed);
 $answersLocked = $ttsEnabled && $elapsed < $lockSeconds;
 $remainingLockSeconds = $answersLocked ? max(0, $lockSeconds - $elapsed) : 0;
-$currentQid = $questionIds[$currentIndex] ?? null;
+$currentQid = $questionIds[$currentIndex % $itemCount] ?? null;
 $questionWeights = json_decode($room['question_weights'] ?? '{}', true) ?: [];
 
 $previousReveal = null;
-if ($currentIndex > 0 && isset($questionIds[$currentIndex - 1])) {
-    $prevQid = $questionIds[$currentIndex - 1];
+if ($currentIndex > 0) {
+    $prevQid = $questionIds[($currentIndex - 1) % $itemCount];
     $prevWeight = isset($questionWeights[(string)$prevQid]) ? (int)$questionWeights[(string)$prevQid] : 1;
     $prevQuestion = battle_beta_question_by_id($pdo, $prevQid, true);
     $stmt = $pdo->prepare(
@@ -321,7 +327,7 @@ $myRow = $myStmt->fetch();
 json_out([
     'status' => 'in_progress',
     'currentIndex' => $currentIndex,
-    'itemCount' => $itemCount,
+    'winningScore' => $room['winning_score'] !== null ? (int)$room['winning_score'] : null,
     'remainingSeconds' => $remaining,
     'question' => $currentQid !== null ? battle_beta_question_by_id($pdo, $currentQid, false) : null,
     'pointValue' => $currentPoints,

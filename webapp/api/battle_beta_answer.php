@@ -35,7 +35,10 @@ if (!$me) {
 
 $currentIndex = (int)$room['current_index'];
 $questionIds = json_decode($room['question_ids'] ?? '[]', true) ?: [];
-$qid = $questionIds[$currentIndex] ?? null;
+// Modulo indexing: this beta has no question-count limit, so the stored
+// list (several shuffled cycles of the full bank) is read as a repeating
+// sequence rather than ever running out -- see battle_beta_state.php.
+$qid = !empty($questionIds) ? ($questionIds[$currentIndex % count($questionIds)] ?? null) : null;
 if ($qid === null) {
     json_error('No active question');
 }

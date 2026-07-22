@@ -83,15 +83,15 @@ final class BattleBetaClassesTest extends TestCase
 
     // --- csa_battle_beta_check_milestones ---
 
-    public function testNoMilestoneCrossedBelow25(): void
+    public function testNoMilestoneCrossedBelow10(): void
     {
-        $r = csa_battle_beta_check_milestones('speedster', 0, 24);
+        $r = csa_battle_beta_check_milestones('speedster', 0, 9);
         $this->assertSame(0, $r['newTier']);
     }
 
     public function testSpeedster50UnlocksHaste(): void
     {
-        $r = csa_battle_beta_check_milestones('speedster', 25, 52);
+        $r = csa_battle_beta_check_milestones('speedster', 10, 52);
         $this->assertSame(50, $r['newTier']);
         $this->assertSame('haste', $r['setNextCorrectBonus']);
         $this->assertSame(0, $r['bonusPoints']);
@@ -104,16 +104,16 @@ final class BattleBetaClassesTest extends TestCase
         $this->assertSame(8, $r['bonusPoints']);
     }
 
-    public function testSaboteur25GrantsTwoShieldCharges(): void
+    public function testSaboteur10GrantsTwoShieldCharges(): void
     {
-        $r = csa_battle_beta_check_milestones('saboteur', 0, 26);
-        $this->assertSame(25, $r['newTier']);
+        $r = csa_battle_beta_check_milestones('saboteur', 0, 11);
+        $this->assertSame(10, $r['newTier']);
         $this->assertSame(2, $r['addShieldCharges']);
     }
 
     public function testSaboteur50GrantsExtraSeconds(): void
     {
-        $r = csa_battle_beta_check_milestones('saboteur', 25, 51);
+        $r = csa_battle_beta_check_milestones('saboteur', 10, 51);
         $this->assertSame(50, $r['newTier']);
         $this->assertSame(3, $r['addExtraSeconds']);
     }
@@ -128,13 +128,13 @@ final class BattleBetaClassesTest extends TestCase
     public function testAlreadyPassedTierDoesNotRefire(): void
     {
         $r = csa_battle_beta_check_milestones('speedster', 50, 60);
-        $this->assertSame(50, $r['newTier']); // stays at 50, no re-trigger of the 25 or 50 unlock
+        $this->assertSame(50, $r['newTier']); // stays at 50, no re-trigger of the 10 or 50 unlock
         $this->assertNull($r['setNextCorrectBonus']);
     }
 
     public function testJumpingMultipleTiersAtOnceAccumulatesAllEffects(): void
     {
-        // A single big answer could plausibly cross 25 and 50 in one jump.
+        // A single big answer could plausibly cross 10 and 50 in one jump.
         $r = csa_battle_beta_check_milestones('saboteur', 0, 55);
         $this->assertSame(50, $r['newTier']);
         $this->assertSame(2, $r['addShieldCharges']);

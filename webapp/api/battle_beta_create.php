@@ -7,14 +7,13 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $in = json_input();
-$itemCount = (int)($in['itemCount'] ?? 0);
-if (!in_array($itemCount, [10, 20, 30], true)) {
-    $itemCount = 10;
-}
-// Scoring is point-based (up to 20/question with speed + difficulty weighting, plus class
-// modifiers), so the cap here is a generous upper bound, not the old "1 point per question" cap.
+// No question-count limit in this beta -- item_count is stored only because
+// the column mirrors the classic table's schema; battle_beta_start.php
+// builds its own large repeating question pool and never reads this value.
+// The battle's only end condition is winningScore.
+$itemCount = 0;
 $winningScore = isset($in['winningScore']) && $in['winningScore'] !== '' && $in['winningScore'] !== null
-    ? max(1, min($itemCount * 25, (int)$in['winningScore']))
+    ? max(1, min(1000, (int)$in['winningScore']))
     : 100; // Spellfire Beta defaults to the "Race to 100" mode this beta is built around
 $ttsEnabled = !empty($in['ttsEnabled']) ? 1 : 0;
 

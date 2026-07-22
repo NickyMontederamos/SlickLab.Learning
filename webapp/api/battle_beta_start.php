@@ -42,10 +42,19 @@ foreach ($rows as $r) {
     }
 }
 
-$itemCount = (int)$room['item_count'];
+// No question-count cap in this beta -- the battle ends only when someone
+// reaches the winning score (see battle_beta_state.php, which now indexes
+// into this list with modulo instead of ever finishing on "ran out of
+// questions"). Repeating the shuffled pool several times just keeps the
+// list itself comfortably longer than any realistic game could reach,
+// rather than relying on wraparound alone for a small pool.
 $allIds = $pdo->query('SELECT id FROM questions ORDER BY id')->fetchAll(PDO::FETCH_COLUMN);
-shuffle($allIds);
-$selectedIds = array_slice($allIds, 0, min($itemCount, count($allIds)));
+$selectedIds = [];
+for ($cycle = 0; $cycle < 5; $cycle++) {
+    $batch = $allIds;
+    shuffle($batch);
+    $selectedIds = array_merge($selectedIds, $batch);
+}
 
 // Weight questions from the globally hardest categories (by aggregate Mock Exam
 // accuracy across everyone) at 2 points instead of 1, computed once here rather

@@ -14,7 +14,7 @@ const BATTLE_BETA_OVERCLOCK_SECONDS = 1.5; // Speedster passive: answer this fas
 const BATTLE_BETA_OVERCLOCK_BONUS = 3;
 const BATTLE_BETA_MALWARE_PENALTY = 1; // Saboteur passive: flat deduction on their own correct answers
 const BATTLE_BETA_HASTE_MULTIPLIER = 1.5;
-const BATTLE_BETA_MILESTONE_TIERS = [25, 50, 75];
+const BATTLE_BETA_MILESTONE_TIERS = [10, 50, 75]; // first tier lowered from 25 -- was too slow to reach in real play
 
 /**
  * Applies a class's passive plus any pending one-shot bonus to an already
@@ -104,7 +104,7 @@ function csa_battle_beta_check_milestones(?string $classKey, int $oldTier, int $
                 $result['bonusPoints'] += 8; // Hyper-Drive Burst: instant, not tied to the next answer
             }
         } elseif ($classKey === 'saboteur') {
-            if ($tier === 25) {
+            if ($tier === 10) {
                 $result['addShieldCharges'] += 2; // Corrupted Cache
             } elseif ($tier === 50) {
                 $result['addExtraSeconds'] += 3; // System Lag

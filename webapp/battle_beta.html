@@ -193,6 +193,25 @@
     100% { transform: translateY(420px) rotate(360deg); opacity: 0.3; }
   }
 
+  /* revealBanner: previous-question result -- was one run-on middot-joined
+     line, hard to scan past 2-3 players and with no real visual emphasis
+     on the correct answer (the old markup used a "correct-line" class that
+     only has styling when nested under .flashcard .fc-answer -- a no-op
+     here, so the "correct answer" text rendered as plain unstyled text). */
+  .reveal-header { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-dim); margin-bottom: 6px; }
+  .reveal-correct-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(47,191,113,0.14); color: var(--success);
+    border: 1px solid rgba(47,191,113,0.35); border-radius: 8px;
+    padding: 7px 12px; font-weight: 700; font-size: 0.9rem; margin-bottom: 10px;
+  }
+  .reveal-answer-list { border-top: 1px dashed var(--border); padding-top: 6px; }
+  .reveal-answer-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; }
+  .reveal-answer-row + .reveal-answer-row { border-top: 1px solid var(--border); }
+  .reveal-answer-points { font-weight: 700; font-size: 0.88rem; }
+  .reveal-answer-points.correct { color: var(--success); }
+  .reveal-answer-points.wrong { color: var(--text-dim); font-weight: 600; }
+
   /* Class select */
   .class-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin: 12px 0; }
   .class-card {
@@ -204,11 +223,36 @@
   .class-card.locked { opacity: 0.45; cursor: not-allowed; }
   .class-card.locked:hover { border-color: var(--border); transform: none; }
   .class-card .class-icon { font-size: 1.8rem; }
+  /* Icon frames cropped from a pixel-art UI kit (assets/icons/class-frame-*.webp)
+     -- image-rendering:pixelated keeps them crisp when scaled up from their
+     native ~24x24 source, same technique as the coin-spin sprite. */
+  .class-icon-framed {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 40px; height: 40px; margin: 0 auto;
+    background-size: contain; background-repeat: no-repeat; background-position: center;
+    image-rendering: pixelated; font-size: 1.3rem;
+  }
+  .class-icon-framed.speedster { background-image: url('assets/icons/class-frame-cyan.webp'); }
+  .class-icon-framed.saboteur { background-image: url('assets/icons/class-frame-purple.webp'); }
+  .my-class-icon-framed {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 26px; height: 26px; vertical-align: -8px; margin-right: 4px;
+    background-size: contain; background-repeat: no-repeat; background-position: center;
+    image-rendering: pixelated; font-size: 0.9rem;
+  }
+  .my-class-icon-framed.speedster { background-image: url('assets/icons/class-frame-cyan.webp'); }
+  .my-class-icon-framed.saboteur { background-image: url('assets/icons/class-frame-purple.webp'); }
   .class-card .class-name { font-weight: 700; font-size: 0.85rem; margin-top: 4px; }
   .class-card .class-tag { font-size: 0.68rem; color: var(--text-dim); margin-top: 2px; }
 
-  /* In-battle personal ability panel */
-  #myAbilityPanel { display: none; }
+  /* In-battle personal ability panel -- deliberately overrides .card's
+     `animation: cardEnter ... both` here: that animation never gets a
+     chance to run while the element starts life at display:none (CSS
+     animations don't tick on undisplayed elements), and toggling display
+     to 'block' later doesn't reliably restart it in every browser -- it
+     can get stuck holding the animation's 0% keyframe (opacity:0)
+     indefinitely, i.e. present in the DOM with correct text but invisible. */
+  #myAbilityPanel { display: none; animation: none; }
   .mana-bar-wrap { background: var(--bg-elevated); border-radius: 999px; height: 10px; overflow: hidden; margin: 6px 0; }
   .mana-bar-fill { height: 100%; background: linear-gradient(90deg, var(--neon-cyan), var(--neon-magenta)); transition: width 0.4s ease; }
   .milestone-toast {
@@ -250,17 +294,11 @@
     <div class="grid-2">
       <div class="card">
         <h2>Create a Room</h2>
-        <label for="itemCountSelect">Number of questions</label>
-        <select id="itemCountSelect">
-          <option value="10" selected>10 questions</option>
-          <option value="20">20 questions</option>
-          <option value="30">30 questions</option>
-        </select>
+        <p class="muted" style="margin-top:-6px;">No question limit &mdash; the battle only ends when someone reaches the winning score.</p>
         <label for="winningScoreSelect">Winning score</label>
         <select id="winningScoreSelect">
-          <option value="100" selected>Race to 100 points</option>
-          <option value="">None &mdash; play all questions</option>
           <option value="50">First to 50 points</option>
+          <option value="100" selected>Race to 100 points</option>
           <option value="150">First to 150 points</option>
           <option value="200">First to 200 points</option>
         </select>
@@ -288,7 +326,7 @@
 
     <div class="card">
       <h2>Choose Your Class</h2>
-      <p class="muted" style="margin-top:-6px;">Every ability is self-contained &mdash; nothing targets another player. Unlocks at 25 / 50 / 75 points.</p>
+      <p class="muted" style="margin-top:-6px;">Every ability is self-contained &mdash; nothing targets another player. Unlocks at 10 / 50 / 75 points.</p>
       <div class="class-grid" id="classGrid"></div>
     </div>
 
@@ -298,9 +336,8 @@
     <div class="card">
       <h2>📋 How This Works</h2>
       <ul style="margin: 6px 0 0; padding-left: 20px; line-height: 1.7;">
-        <li>Everyone gets the <strong>same questions at the same time</strong> &mdash; answer fast and correctly for the most points.</li>
-        <li><strong>Race to 100</strong> &mdash; first player to reach the winning score ends the battle.</li>
-        <li>Your class passive is active from the start; new abilities unlock automatically at <strong>25, 50, and 75 points</strong>.</li>
+        <li>Everyone gets the <strong>same questions at the same time</strong> &mdash; answer fast and correctly for the most points. There's no question limit; the battle only ends when someone reaches the winning score.</li>
+        <li>Your class passive is active from the start; new abilities unlock automatically at <strong>10, 50, and 75 points</strong>.</li>
         <li>Some questions are worth <strong>⚡ 2x points</strong> &mdash; those are drawn from the toughest categories overall.</li>
         <li>You can leave anytime with <strong>Quit Battle</strong>; the host can end the battle for everyone with <strong>End Battle</strong>.</li>
       </ul>

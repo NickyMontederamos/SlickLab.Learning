@@ -26,16 +26,31 @@
     background: var(--bg);
     min-height: 100vh;
     padding: 48px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
-  /* Single composition: background + character cutouts + logo + login form
-     all positioned as percentages of one box, matching the layout traced in
-     the drag-and-drop positioning tool 1:1 (same 16:10 stage ratio). */
-  .login-stage {
+  /* .login-wrap is the shared coordinate box: .login-stage (background +
+     character/logo art, always locked to its 16:10 ratio so the art scales
+     identically at every width) and .login-form-overlay are SIBLINGS inside
+     it, not parent/child. That split matters on mobile: the form switches
+     to position:static there, and because it's a sibling rather than a
+     child clipped inside the (out-of-flow-art-only) stage, it naturally
+     flows below the art instead of overlapping it.
+     flex-shrink:0 matters here -- without it, aspect-ratio + overflow:hidden
+     inside a flex parent lets a box collapse far below its intended width
+     on narrow viewports (a real bug hit and fixed earlier). */
+  .login-wrap {
     position: relative;
     width: min(94vw, 1100px);
-    aspect-ratio: 16 / 10;
+    flex-shrink: 0;
     margin: 0 auto;
+  }
+  .login-stage {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 10;
     border-radius: 16px;
     overflow: hidden;
     background: #05060c url('assets/backgrounds/bg_outside.jpg') no-repeat center center;
@@ -66,7 +81,7 @@
   .cluster-main-logo img { display: block; width: 100%; height: auto; }
 
   .login-form-overlay {
-    position: absolute; top: 55.6%; left: 34.7%; width: 32%; z-index: 1;
+    position: absolute; top: 61%; left: 37.5%; width: 26%; z-index: 1;
   }
 
   .input-group { position: relative; margin-bottom: 14px; }
@@ -109,11 +124,12 @@
   }
   .login-identity { text-align: center; margin-top: 14px; font-size: 0.72rem; color: var(--text-dim); }
 
-  /* Below ~680px the form can't stay pinned to a shrinking % width and still
-     be usable, so it drops out of the overlay and flows full-width beneath
-     the (now shorter) character/logo banner instead. */
-  @media (max-width: 680px) {
-    .login-stage { aspect-ratio: unset; min-height: 260px; }
+  /* Below ~820px a 26%-wide overlay gets too cramped to use comfortably
+     (phones AND small tablets), so the form drops out of the overlay and
+     flows full-width below the art banner instead. .login-stage keeps its
+     16:10 ratio unchanged here -- the art was never the problem, it always
+     scaled fine; only the form needs different treatment at this size. */
+  @media (max-width: 820px) {
     .login-form-overlay {
       position: static; width: min(100%, 360px); margin: 20px auto 0;
     }
@@ -122,11 +138,13 @@
 </style>
 </head>
 <body>
-<div class="login-stage" id="loginStage">
-  <div id="clusterDigi" class="cluster-char"><img src="assets/backgrounds/logo_digi.png" alt=""></div>
-  <div id="clusterBea" class="cluster-char"><img src="assets/backgrounds/logo_bea.png" alt=""></div>
-  <div id="clusterVhine" class="cluster-char"><img src="assets/backgrounds/logo_vhine.png" alt=""></div>
-  <div class="cluster-main-logo"><img src="assets/icons/logo.png" alt="OG's Quiz Battle — Mock Exam &amp; Flashcards"></div>
+<div class="login-wrap">
+  <div class="login-stage" id="loginStage">
+    <div id="clusterDigi" class="cluster-char"><img src="assets/backgrounds/logo_digi.png" alt=""></div>
+    <div id="clusterBea" class="cluster-char"><img src="assets/backgrounds/logo_bea.png" alt=""></div>
+    <div id="clusterVhine" class="cluster-char"><img src="assets/backgrounds/logo_vhine.png" alt=""></div>
+    <div class="cluster-main-logo"><img src="assets/icons/logo.png" alt="OG's Quiz Battle — Mock Exam &amp; Flashcards"></div>
+  </div>
 
   <div class="login-form-overlay">
     <form id="loginForm">
@@ -142,16 +160,9 @@
       <div class="error-msg" id="loginError"></div>
       <button type="submit" class="login-btn" id="loginBtn">Log In</button>
     </form>
-    <div class="login-identity">SlickLab.Digital <span class="brand-accent">| CebuPips | OG Exclusive</span> <span class="v2-badge">v2</span></div>
+    <div class="login-identity">ServiceNOW <span class="brand-accent">| CebuPips | SlickPrepTime</span> <span class="v2-badge">v3.0</span></div>
   </div>
 </div>
-
-<footer class="site-footer">
-  <div class="footer-brand">SlickLab.Digital | CebuPips | OG Exclusive</div>
-  <p>Built for the crew grinding toward CSA certification together.</p>
-  <p class="footer-wish">Wishing Gil, Digi, JP, Bea, Nikki Vhine &amp; Nicky all the best on the CSA exam — you've got this! 🚀</p>
-  <p class="muted">Study hard, trust your prep, and go pass that exam on the first try.</p>
-</footer>
 
 <script src="assets/js/api.js"></script>
 <script>

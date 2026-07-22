@@ -69,6 +69,7 @@ a:hover { color: var(--accent-hover); }
   margin-bottom: 16px;
   overflow: hidden;
   transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  animation: cardEnter 0.35s ease both;
 }
 .card::before {
   content: '';
@@ -84,13 +85,46 @@ a:hover { color: var(--accent-hover); }
   transform: translateY(-2px);
 }
 
+/* Reserve for the 1-2 cards per page that should read as the primary
+   action (e.g. Full Mock Exam, Focus Coach) -- a stronger, slowly
+   shimmering border instead of the static one every other card gets.
+   Deliberately not used broadly: hierarchy only works if most cards
+   stay quiet. */
+.card.featured::before {
+  height: 4px;
+  opacity: 1;
+  background-size: 200% 100%;
+  animation: cardBorderShimmer 5s linear infinite;
+}
+.card.featured {
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.04), 0 12px 32px rgba(0,0,0,0.4), 0 0 24px rgba(0,243,255,0.08);
+}
+.card.featured:hover {
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.06), 0 14px 36px rgba(0,0,0,0.45), 0 0 32px rgba(0,243,255,0.16);
+}
+
+@keyframes cardEnter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes cardBorderShimmer {
+  0% { background-position: 0% 0; }
+  100% { background-position: 200% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card { animation: none; }
+  .card.featured::before { animation: none; }
+}
+
 h1, h2, h3 { line-height: 1.25; }
 h1 { font-size: 1.6rem; }
 h2 { font-size: 1.25rem; }
 p.muted, .muted { color: var(--text-dim); }
 
 .btn {
+  position: relative;
   display: inline-block;
+  overflow: hidden;
   padding: 10px 18px;
   border-radius: 8px;
   border: 1px solid var(--border);
@@ -102,16 +136,35 @@ p.muted, .muted { color: var(--text-dim); }
   text-align: center;
   transition: box-shadow 0.18s ease, transform 0.18s ease, background 0.18s ease;
 }
+/* Hover sheen -- a light band that sweeps across on hover. Only on solid
+   (primary/danger) buttons; skipped on .secondary since it has no solid
+   surface for the sheen to read against. */
+.btn:not(.secondary)::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -60%;
+  width: 35%; height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.35), transparent);
+  transform: skewX(-20deg);
+  transition: left 0.5s ease;
+  pointer-events: none;
+}
+.btn:not(.secondary):hover::after { left: 130%; }
 .btn:hover {
   background: linear-gradient(135deg, var(--accent-hover), #8f6bff);
   box-shadow: 0 0 0 1px rgba(255,255,255,0.06), 0 6px 18px rgba(79,124,255,0.35), 0 0 22px rgba(47,216,255,0.25);
   transform: translateY(-1px);
 }
+.btn:active { transform: scale(0.97); box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
 .btn.secondary { background: transparent; color: var(--text); }
 .btn.secondary:hover { background: var(--bg-elevated); box-shadow: none; transform: none; }
+.btn.secondary:active { transform: scale(0.97); }
 .btn.danger { background: var(--danger); }
 .btn.danger:hover { background: #f57575; box-shadow: 0 6px 18px rgba(239,90,90,0.35); }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .btn:not(.secondary)::after { transition: none; }
+}
 .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
 
 input, select {

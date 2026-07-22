@@ -173,10 +173,15 @@ CREATE TABLE IF NOT EXISTS battle_reactions (
 
 -- Fixed topic taxonomy for the Gamified Topic Learning Loop (Phase 1), one
 -- row per consolidated category. sort_order also drives topic-unlock gating.
+-- Topic 3's slug is deliberately "user-management" rather than a name
+-- built from the words "users" + "groups" + "roles" -- the plural form of
+-- that first word is also a real table name, and csa_prefix_tables()
+-- rewrites it wherever it appears as a whole word, even inside an
+-- unrelated string literal. See SOLUTIONS_LOG.md, 2026-07-22 entry.
 INSERT INTO topics (slug, name, category_key, sort_order) VALUES
     ('navigation', 'Navigation', 'Navigation', 1),
     ('platform-admin', 'Platform Admin', 'Platform Admin', 2),
-    ('users-groups-roles', 'Users, Groups & Roles', 'Users/Groups/Roles', 3),
+    ('user-management', 'Users, Groups & Roles', 'Users/Groups/Roles', 3),
     ('security-acl', 'Security & ACL', 'Security & ACL', 4),
     ('forms', 'Forms', 'Forms', 5),
     ('lists-filters', 'Lists & Filters', 'Lists & Filters', 6),

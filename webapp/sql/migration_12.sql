@@ -52,10 +52,20 @@ ALTER TABLE exam_attempts
 -- Pedagogical order: platform fundamentals -> data/config -> automation ->
 -- specialized modules. sort_order also drives topic-unlock gating (topic N
 -- unlocks once topic N-1 has a passing 'topic' attempt).
+-- Topic 3's slug is deliberately "user-management", not a more literal
+-- name built from the words "users" + "groups" + "roles" -- the plural
+-- form of that first word is also a real table name, and
+-- csa_prefix_tables() rewrites it wherever it appears as a whole word, even
+-- inside an unrelated string literal like this one, since it's a blind
+-- word-boundary text replacement with no SQL-syntax awareness (it can't
+-- tell a table reference from a string value). Avoided here rather than
+-- worked around, so this comment doesn't fall into the same trap by
+-- spelling out the exact colliding word itself. See SOLUTIONS_LOG.md,
+-- 2026-07-22 entry.
 INSERT INTO topics (slug, name, category_key, sort_order) VALUES
     ('navigation', 'Navigation', 'Navigation', 1),
     ('platform-admin', 'Platform Admin', 'Platform Admin', 2),
-    ('users-groups-roles', 'Users, Groups & Roles', 'Users/Groups/Roles', 3),
+    ('user-management', 'Users, Groups & Roles', 'Users/Groups/Roles', 3),
     ('security-acl', 'Security & ACL', 'Security & ACL', 4),
     ('forms', 'Forms', 'Forms', 5),
     ('lists-filters', 'Lists & Filters', 'Lists & Filters', 6),

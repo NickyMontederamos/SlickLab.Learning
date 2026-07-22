@@ -14,11 +14,19 @@
     root.TopicProgress = factory();
   }
 })(typeof window !== 'undefined' ? window : globalThis, function () {
-  // @param topic { unlocked, passed, poolSize, masteryPercent }
+  // @param topic { unlocked, passed, poolSize, masteryPercent, pipelineMode,
+  //                blocksTotal, currentBlockNumber }
+  //   pipelineMode is 'blocks' (robust topic) or 'lab' (thin topic, no
+  //   block-splitting) -- absent/undefined is treated as 'blocks' with no
+  //   block data, matching a topic that hasn't reported pipeline fields yet.
   // @param opts.isOpen  this topic's lesson panel is currently expanded
   function buildTopicCardViewModel(topic, opts) {
     opts = opts || {};
     var isOpen = !!opts.isOpen;
+    var pipelineMode = topic.pipelineMode || 'blocks';
+    var isLab = pipelineMode === 'lab';
+    var allBlocksDone = !isLab && topic.blocksTotal
+      && topic.currentBlockNumber > topic.blocksTotal;
 
     var classes = ['topic-card'];
     if (!topic.unlocked) classes.push('locked');
@@ -29,15 +37,33 @@
     var metaText = topic.poolSize + ' ' + questionWord;
     if (topic.unlocked) {
       metaText += ' · ' + topic.masteryPercent + '% known';
+      if (!topic.passed && !isLab && topic.blocksTotal) {
+        metaText += allBlocksDone
+          ? ' · Gate Check ready'
+          : ' · Block ' + topic.currentBlockNumber + ' of ' + topic.blocksTotal;
+      }
     }
 
+    // action tells the caller which API to call on click -- kept as an enum
+    // rather than making topics.js re-derive the same branching by parsing
+    // ctaLabel text.
     var ctaLabel;
+    var action;
     if (!topic.unlocked) {
       ctaLabel = 'Locked';
+      action = 'locked';
     } else if (topic.passed) {
-      ctaLabel = 'Retry Topic Quiz';
+      ctaLabel = 'Retry Gate Check';
+      action = 'gate';
+    } else if (isLab) {
+      ctaLabel = 'Start Final Verification Quiz';
+      action = 'lab';
+    } else if (allBlocksDone) {
+      ctaLabel = 'Start Gate Check';
+      action = 'gate';
     } else {
-      ctaLabel = 'Start Topic Quiz';
+      ctaLabel = 'Start Block ' + (topic.currentBlockNumber || 1) + ' Quiz';
+      action = 'block';
     }
 
     return {
@@ -45,6 +71,7 @@
       metaText: metaText,
       ctaLabel: ctaLabel,
       ctaEnabled: topic.unlocked,
+      action: action,
     };
   }
 

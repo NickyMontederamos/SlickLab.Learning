@@ -108,8 +108,11 @@ const API = (() => {
     topics: () => call('topics.php'),
     topicLesson: (topicId) => call(`topic_lesson.php?topicId=${topicId}`),
     topicQuizStart: (topicId) => call('topic_quiz_start.php', { method: 'POST', body: { topicId } }),
+    topicBlockStart: (topicId) => call('topic_block_start.php', { method: 'POST', body: { topicId } }),
     adminSaveLesson: (topicId, lessonBodyMd, lessonStatus) =>
       call('admin_topic_lesson_save.php', { method: 'POST', body: { topicId, lessonBodyMd, lessonStatus } }),
+    adminSaveBlockContent: (topicId, blockNumber, contentType, bodyMd, status) =>
+      call('admin_topic_block_content_save.php', { method: 'POST', body: { topicId, blockNumber, contentType, bodyMd, status } }),
     adminUploadTopicImage: (topicId, file, altText) => {
       const formData = new FormData();
       formData.append('topicId', topicId);

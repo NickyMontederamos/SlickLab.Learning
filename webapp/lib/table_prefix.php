@@ -19,6 +19,7 @@ const CSA_TABLES = [
     'battle_reactions',
     'topics',
     'topic_lesson_images',
+    'topic_block_content',
 ];
 
 /**

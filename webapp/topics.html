@@ -52,6 +52,11 @@
   #lessonImages { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
   #lessonImages img { max-width: 260px; border-radius: 8px; border: 1px solid var(--border); }
   #lessonBody { white-space: pre-wrap; line-height: 1.6; }
+
+  .pipeline-section { margin-top: 20px; padding-top: 16px; border-top: 1px dashed var(--border); }
+  .pipeline-section h3 { font-size: 1rem; margin: 14px 0 6px; }
+  .pipeline-section .pipeline-body { white-space: pre-wrap; line-height: 1.6; }
+  #blockProgressLabel { font-size: 0.9rem; font-weight: 700; color: var(--neon-cyan); margin-bottom: 8px; }
 </style>
 </head>
 <body>
@@ -75,6 +80,23 @@
     <p class="muted" id="lessonStatusNote"></p>
     <div id="lessonBody"></div>
     <div id="lessonImages"></div>
+
+    <div class="pipeline-section" id="blockSection" style="display:none;">
+      <div id="blockProgressLabel"></div>
+      <p class="muted" id="blockStatusNote"></p>
+      <div class="pipeline-body" id="blockReviewBody"></div>
+    </div>
+
+    <div class="pipeline-section" id="labSection" style="display:none;">
+      <div class="fc-label">Self-Directed Instance-Lab</div>
+      <p class="muted" id="labStatusNote"></p>
+      <div class="pipeline-body" id="labReviewBody"></div>
+      <h3>Practice on Your Own Instance</h3>
+      <div class="pipeline-body" id="labInstructionsBody"></div>
+      <h3>Self-Verification Checklist</h3>
+      <div class="pipeline-body" id="labChecklistBody"></div>
+    </div>
+
     <div class="btn-row" style="margin-top:16px;">
       <button class="btn secondary" id="closeLessonBtn" type="button">Close</button>
       <button class="btn" id="startTopicQuizBtn" type="button">Start Topic Quiz</button>

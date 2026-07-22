@@ -70,13 +70,13 @@ final class TablePrefixTest extends TestCase
         $this->assertStringNotContainsString('stg_stg_', $out);
     }
 
-    public function testAllTwelveRealTableNamesAreInTheList(): void
+    public function testAllThirteenRealTableNamesAreInTheList(): void
     {
         $this->assertSame([
             'users', 'questions', 'options', 'flashcard_progress',
             'exam_attempts', 'exam_answers',
             'battle_rooms', 'battle_participants', 'battle_answers', 'battle_reactions',
-            'topics', 'topic_lesson_images',
+            'topics', 'topic_lesson_images', 'topic_block_content',
         ], CSA_TABLES);
     }
 }

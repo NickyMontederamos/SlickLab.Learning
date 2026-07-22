@@ -3,6 +3,7 @@ require __DIR__ . '/../config/bootstrap.php';
 require __DIR__ . '/../lib/exam_grading.php';
 require __DIR__ . '/../lib/walkthrough.php';
 require __DIR__ . '/../lib/incorrect_review.php';
+require __DIR__ . '/../lib/topic_quiz.php';
 
 $uid = require_login();
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -143,6 +144,7 @@ $passPercent = csa_pass_percent_for_kind(
     [
         'mini' => (float)($examConfig['mini_pass_percent'] ?? 80),
         'topic' => (float)($examConfig['topic_pass_percent'] ?? 80),
+        'topic_block' => (float)($examConfig['topic_pass_percent'] ?? 80),
     ],
     (float)$examConfig['pass_percent']
 );
@@ -156,8 +158,8 @@ $upd->execute([$correctCount, $scorePercent, $passed ? 1 : 0, $attemptId]);
 
 $pdo->commit();
 
-// Topic-quiz attempts additionally report which topic unlocks next, so the
-// frontend can show an unlock CTA without a second round-trip.
+// Topic-quiz (Gate Check) attempts additionally report which topic unlocks
+// next, so the frontend can show an unlock CTA without a second round-trip.
 $topicId = null;
 $nextTopicId = null;
 if ($attempt['attempt_kind'] === 'topic' && $attempt['topic_id'] !== null) {
@@ -173,6 +175,39 @@ if ($attempt['attempt_kind'] === 'topic' && $attempt['topic_id'] !== null) {
     }
 }
 
+// Block-quiz attempts report the block just attempted plus what's next --
+// either the following block, or (once every block is passed) a signal
+// that the Gate Check is now available.
+$blockNumber = null;
+$blocksTotal = null;
+$nextBlockNumber = null;
+$allBlocksComplete = null;
+if ($attempt['attempt_kind'] === 'topic_block' && $attempt['topic_id'] !== null) {
+    $topicId = (int)$attempt['topic_id'];
+    $blockNumber = $attempt['block_number'] !== null ? (int)$attempt['block_number'] : null;
+    $catStmt = $pdo->prepare('SELECT category_key FROM topics WHERE id = ?');
+    $catStmt->execute([$topicId]);
+    $categoryKey = $catStmt->fetchColumn();
+    if ($categoryKey !== false) {
+        $countStmt = $pdo->prepare('SELECT COUNT(*) FROM questions WHERE category = ?');
+        $countStmt->execute([$categoryKey]);
+        $blocksTotal = csa_compute_block_count((int)$countStmt->fetchColumn());
+
+        $blockPassedStmt = $pdo->prepare(
+            "SELECT DISTINCT block_number FROM exam_attempts
+             WHERE user_id = ? AND topic_id = ? AND attempt_kind = 'topic_block' AND passed = 1 AND block_number IS NOT NULL"
+        );
+        $blockPassedStmt->execute([$uid, $topicId]);
+        $passedBlocks = array_map('intval', $blockPassedStmt->fetchAll(PDO::FETCH_COLUMN));
+        if ($passed && $blockNumber !== null && !in_array($blockNumber, $passedBlocks, true)) {
+            $passedBlocks[] = $blockNumber; // this submission just passed, reflect it immediately
+        }
+        $next = csa_compute_current_block($blocksTotal, $passedBlocks);
+        $allBlocksComplete = $next > $blocksTotal;
+        $nextBlockNumber = $allBlocksComplete ? null : $next;
+    }
+}
+
 json_out([
     'attemptId' => $attemptId,
     'total' => $total,
@@ -185,6 +220,10 @@ json_out([
     'parentAttemptId' => $attempt['parent_attempt_id'] !== null ? (int)$attempt['parent_attempt_id'] : null,
     'topicId' => $topicId,
     'nextTopicId' => $nextTopicId,
+    'blockNumber' => $blockNumber,
+    'blocksTotal' => $blocksTotal,
+    'nextBlockNumber' => $nextBlockNumber,
+    'allBlocksComplete' => $allBlocksComplete,
     'unlocked' => $attempt['attempt_kind'] === 'topic' ? $passed : null,
     'review' => $review,
 ]);

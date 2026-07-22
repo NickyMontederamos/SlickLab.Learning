@@ -21,6 +21,13 @@
     border: none; border-radius: 6px; padding: 3px 7px; font-size: 0.75rem; cursor: pointer;
   }
   #uploadStatus { font-size: 0.85rem; color: var(--text-dim); min-height: 18px; margin-top: 6px; }
+  .block-content-field { margin-bottom: 22px; }
+  .block-content-field:last-child { margin-bottom: 0; }
+  .block-content-field textarea {
+    width: 100%; min-height: 140px; background: var(--bg); border: 1px solid var(--border);
+    color: var(--text); border-radius: 8px; padding: 10px 12px; font-size: 0.92rem;
+    resize: vertical; font-family: inherit; line-height: 1.5;
+  }
 </style>
 </head>
 <body>
@@ -59,6 +66,12 @@
         <button class="btn" id="saveLessonBtn" type="button">Save Lesson</button>
         <span id="saveStatus" class="muted"></span>
       </div>
+    </div>
+
+    <div class="card">
+      <h2 id="blockContentHeading">Block Review Content</h2>
+      <p class="muted" id="blockContentIntro"></p>
+      <div id="blockContentFields"></div>
     </div>
 
     <div class="card">

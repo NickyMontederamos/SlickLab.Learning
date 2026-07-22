@@ -216,12 +216,12 @@
   }
 
   const active = await API.examActive();
-  if (active.active && (active.attemptKind === 'mini' || active.attemptKind === 'topic')) {
-    // Mini-exams and topic quizzes are both started server-side (from the
-    // flashcards readiness prompt / topics page) then the browser is sent
-    // straight here -- jump right in instead of making the user click
-    // "Resume" on their own freshly generated exam, which would read oddly
-    // ("resume" implies they'd already started it themselves).
+  if (active.active && (active.attemptKind === 'mini' || active.attemptKind === 'topic' || active.attemptKind === 'topic_block')) {
+    // Mini-exams, topic Gate Checks, and topic block quizzes are all started
+    // server-side (from the flashcards readiness prompt / topics page) then
+    // the browser is sent straight here -- jump right in instead of making
+    // the user click "Resume" on their own freshly generated exam, which
+    // would read oddly ("resume" implies they'd already started it themselves).
     enterActiveAttempt(active);
   } else if (active.active) {
     resumeSection.style.display = 'block';

@@ -78,6 +78,24 @@ CREATE TABLE IF NOT EXISTS topic_lesson_images (
     INDEX idx_topic_lesson_images_topic (topic_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Authored content for the tiered block pipeline (Phase 2). A robust topic
+-- gets block_number 1..N rows with content_type='review'; a thin topic gets
+-- block_number=0 rows for 'review', 'lab_instructions', 'lab_checklist'.
+CREATE TABLE IF NOT EXISTS topic_block_content (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    topic_id INT UNSIGNED NOT NULL,
+    block_number SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+    content_type ENUM('review','lab_instructions','lab_checklist') NOT NULL DEFAULT 'review',
+    body_md MEDIUMTEXT NULL,
+    status ENUM('placeholder','draft','published') NOT NULL DEFAULT 'placeholder',
+    updated_by INT UNSIGNED NULL,
+    updated_at DATETIME NULL,
+    FOREIGN KEY (topic_id) REFERENCES topics(id) ON DELETE CASCADE,
+    FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL,
+    UNIQUE KEY uniq_topic_block_type (topic_id, block_number, content_type),
+    INDEX idx_topic_block_content_topic (topic_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS exam_attempts (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     user_id INT UNSIGNED NOT NULL,
@@ -92,13 +110,15 @@ CREATE TABLE IF NOT EXISTS exam_attempts (
     passed TINYINT(1) NOT NULL DEFAULT 0,
     status ENUM('in_progress','completed','abandoned') NOT NULL DEFAULT 'in_progress',
     parent_attempt_id INT UNSIGNED NULL,
-    attempt_kind ENUM('full','mini','topic') NOT NULL DEFAULT 'full',
+    attempt_kind ENUM('full','mini','topic','topic_block') NOT NULL DEFAULT 'full',
     topic_id INT UNSIGNED NULL,
+    block_number SMALLINT UNSIGNED NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (parent_attempt_id) REFERENCES exam_attempts(id) ON DELETE CASCADE,
     FOREIGN KEY (topic_id) REFERENCES topics(id) ON DELETE SET NULL,
     INDEX idx_exam_attempts_parent (parent_attempt_id),
-    INDEX idx_exam_attempts_user (user_id)
+    INDEX idx_exam_attempts_user (user_id),
+    INDEX idx_exam_attempts_topic_block (topic_id, attempt_kind, block_number)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS exam_answers (

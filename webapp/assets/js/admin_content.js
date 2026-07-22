@@ -26,10 +26,91 @@
     currentTopicId = topicId;
     document.getElementById('saveStatus').textContent = '';
     document.getElementById('lessonBodyInput').value = 'Loading...';
+    document.getElementById('blockContentFields').innerHTML = '';
     const lesson = await API.topicLesson(topicId);
     document.getElementById('lessonBodyInput').value = lesson.lessonBodyMd || '';
     document.getElementById('lessonStatusSelect').value = lesson.lessonStatus;
     renderImages(lesson.images);
+    renderBlockContentFields(topicId, lesson);
+  }
+
+  function findBlockContent(blockContent, blockNumber, contentType) {
+    return (blockContent || []).find((c) => c.blockNumber === blockNumber && c.contentType === contentType) || null;
+  }
+
+  // One field per piece of authored pipeline content: a block review per
+  // block for a robust topic, or the three lab pieces for a thin topic.
+  // Each field saves independently -- there's no single combined "save all".
+  function renderBlockContentFields(topicId, lesson) {
+    const container = document.getElementById('blockContentFields');
+    const heading = document.getElementById('blockContentHeading');
+    const intro = document.getElementById('blockContentIntro');
+
+    let fields; // [{ blockNumber, contentType, label }]
+    if (lesson.pipelineMode === 'lab') {
+      heading.textContent = 'Self-Directed Instance-Lab Content';
+      intro.textContent = 'This topic has too few questions to block-split, so it uses hands-on instance practice instead of formative check-points.';
+      fields = [
+        { blockNumber: 0, contentType: 'review', label: 'Targeted Micro-Review' },
+        { blockNumber: 0, contentType: 'lab_instructions', label: 'Self-Directed Instance-Lab Instructions' },
+        { blockNumber: 0, contentType: 'lab_checklist', label: 'Self-Verification Checklist' },
+      ];
+    } else {
+      heading.textContent = 'Block Review Content';
+      const total = lesson.blocksTotal || 0;
+      intro.textContent = total
+        ? `This topic is split into ${total} block${total === 1 ? '' : 's'} -- write each block's review text below.`
+        : 'This topic has no question pool yet, so block count is unknown.';
+      fields = [];
+      for (let b = 1; b <= total; b++) {
+        fields.push({ blockNumber: b, contentType: 'review', label: `Block ${b} Review` });
+      }
+    }
+
+    container.innerHTML = fields.map((f, i) => `
+      <div class="block-content-field" data-block-number="${f.blockNumber}" data-content-type="${f.contentType}">
+        <div class="btn-row" style="justify-content:space-between; align-items:center;">
+          <label style="margin:0;">${escapeHtml(f.label)}</label>
+          <select class="block-status-select">
+            <option value="placeholder">Placeholder</option>
+            <option value="draft">Draft</option>
+            <option value="published">Published</option>
+          </select>
+        </div>
+        <textarea class="block-body-input" placeholder="Write this content..."></textarea>
+        <div class="btn-row" style="margin-top:8px;">
+          <button class="btn secondary block-save-btn" type="button">Save</button>
+          <span class="muted block-save-status"></span>
+        </div>
+      </div>
+    `).join('');
+
+    fields.forEach((f) => {
+      const existing = findBlockContent(lesson.blockContent, f.blockNumber, f.contentType);
+      const fieldEl = container.querySelector(
+        `.block-content-field[data-block-number="${f.blockNumber}"][data-content-type="${f.contentType}"]`
+      );
+      fieldEl.querySelector('.block-body-input').value = (existing && existing.bodyMd) || '';
+      fieldEl.querySelector('.block-status-select').value = (existing && existing.status) || 'placeholder';
+
+      fieldEl.querySelector('.block-save-btn').addEventListener('click', async () => {
+        const statusEl = fieldEl.querySelector('.block-save-status');
+        statusEl.textContent = 'Saving...';
+        try {
+          await API.adminSaveBlockContent(
+            topicId,
+            f.blockNumber,
+            f.contentType,
+            fieldEl.querySelector('.block-body-input').value,
+            fieldEl.querySelector('.block-status-select').value
+          );
+          statusEl.textContent = 'Saved.';
+          setTimeout(() => { if (statusEl.textContent === 'Saved.') statusEl.textContent = ''; }, 2000);
+        } catch (e) {
+          statusEl.textContent = 'Could not save: ' + e.message;
+        }
+      });
+    });
   }
 
   function renderImages(images) {

@@ -24,9 +24,8 @@ if (!$topic) {
     json_error('Topic not found', 404);
 }
 
-// Verify this topic is actually unlocked for the user server-side -- never
-// trust the client to only request a quiz for a topic it displayed as
-// unlocked, same rule this app already applies everywhere else scoring gates.
+// Same server-side unlock check as the Gate Check starter -- never trust
+// the client to only request a block for a topic it displayed as unlocked.
 $topicIdsSorted = array_map('intval', $pdo->query('SELECT id FROM topics ORDER BY sort_order')->fetchAll(PDO::FETCH_COLUMN));
 $passedStmt = $pdo->prepare(
     "SELECT DISTINCT topic_id FROM exam_attempts WHERE user_id = ? AND attempt_kind = 'topic' AND passed = 1 AND topic_id IS NOT NULL"
@@ -40,60 +39,60 @@ if (empty($unlockedMap[$topicId])) {
 
 $freshStmt = $pdo->prepare('SELECT id FROM questions WHERE category = ? ORDER BY id');
 $freshStmt->execute([$topic['category_key']]);
-$freshIds = array_map('intval', $freshStmt->fetchAll(PDO::FETCH_COLUMN));
-if (!count($freshIds)) {
-    json_error('This topic has no questions yet', 409);
+$topicQuestionIds = array_map('intval', $freshStmt->fetchAll(PDO::FETCH_COLUMN));
+$totalBlocks = csa_compute_block_count(count($topicQuestionIds));
+if ($totalBlocks === 0) {
+    json_error('This topic uses the self-directed lab track, not the block quiz', 409);
 }
 
-// A robust (block-based) topic must clear every block before the
-// cumulative Gate Check unlocks. A thin (lab-track) topic has no blocks,
-// so its single Final Verification quiz is available as soon as the topic
-// itself is unlocked -- same behavior this endpoint already had before the
-// tiered pipeline existed.
-$totalBlocks = csa_compute_block_count(count($freshIds));
-if ($totalBlocks > 0) {
-    $blockPassedStmt = $pdo->prepare(
-        "SELECT DISTINCT block_number FROM exam_attempts
-         WHERE user_id = ? AND topic_id = ? AND attempt_kind = 'topic_block' AND passed = 1 AND block_number IS NOT NULL"
-    );
-    $blockPassedStmt->execute([$uid, $topicId]);
-    $passedBlocks = array_map('intval', $blockPassedStmt->fetchAll(PDO::FETCH_COLUMN));
-    if (csa_compute_current_block($totalBlocks, $passedBlocks) <= $totalBlocks) {
-        json_error('Pass every block before starting the Gate Check', 403);
-    }
+// The block to start is always computed server-side, never taken from the
+// client -- if you haven't passed block 2 yet, requesting block 4 still
+// gets you block 2. Same "never trust client-supplied progress" rule the
+// unlock check above already applies.
+$blockPassedStmt = $pdo->prepare(
+    "SELECT DISTINCT block_number FROM exam_attempts
+     WHERE user_id = ? AND topic_id = ? AND attempt_kind = 'topic_block' AND passed = 1 AND block_number IS NOT NULL"
+);
+$blockPassedStmt->execute([$uid, $topicId]);
+$passedBlocks = array_map('intval', $blockPassedStmt->fetchAll(PDO::FETCH_COLUMN));
+$blockNumber = csa_compute_current_block($totalBlocks, $passedBlocks);
+if ($blockNumber > $totalBlocks) {
+    json_error('All blocks are already passed -- start the Gate Check instead', 409);
 }
+
+$freshIds = csa_slice_block_questions($topicQuestionIds, $totalBlocks, $blockNumber);
 shuffle($freshIds);
 
-// Local remediation, scoped to this topic only (any block attempt or a
-// previous Gate Check attempt at THIS topic) -- this is the "cumulative"
-// part of the Gate Check, and deliberately not the old global cross-topic
-// revision pool. See SOLUTIONS_LOG.md for why the two were kept separate.
+// Local remediation: only what was missed on a PREVIOUS attempt at this
+// exact block, not anywhere else in the topic or app -- replaces the
+// global cross-topic revision pool for this pipeline by design (see
+// SOLUTIONS_LOG.md).
 $revisionStmt = $pdo->prepare(
     "SELECT DISTINCT ea.question_id
      FROM exam_answers ea
      JOIN exam_attempts eat ON eat.id = ea.attempt_id
      LEFT JOIN flashcard_progress fp ON fp.question_id = ea.question_id AND fp.user_id = ?
-     WHERE eat.user_id = ? AND eat.topic_id = ? AND eat.attempt_kind IN ('topic_block', 'topic')
+     WHERE eat.user_id = ? AND eat.topic_id = ? AND eat.attempt_kind = 'topic_block' AND eat.block_number = ?
        AND ea.is_correct = 0 AND (fp.status IS NULL OR fp.status != 'known')"
 );
-$revisionStmt->execute([$uid, $uid, $topicId]);
+$revisionStmt->execute([$uid, $uid, $topicId, $blockNumber]);
 $revisionIds = array_map('intval', $revisionStmt->fetchAll(PDO::FETCH_COLUMN));
 shuffle($revisionIds);
 
-$quizSize = (int)($config['topic_quiz_size'] ?? 8);
 $revisionSlots = (int)($config['topic_revision_slots'] ?? 2);
-$selection = csa_build_topic_quiz_selection($freshIds, $revisionIds, $quizSize, $revisionSlots);
+$selection = csa_build_topic_quiz_selection($freshIds, $revisionIds, count($freshIds), $revisionSlots);
 
 $response = csa_start_topic_pipeline_attempt(
     $pdo,
     $uid,
     $topicId,
     $selection['questionIds'],
-    'topic',
-    null,
+    'topic_block',
+    $blockNumber,
     $config,
     $selection['freshCount'],
     $selection['revisionCount']
 );
+$response['blocksTotal'] = $totalBlocks;
 
 json_out($response);

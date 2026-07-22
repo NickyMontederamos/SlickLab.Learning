@@ -64,3 +64,83 @@ function csa_compute_unlocked_topics(array $topicIdsBySortOrder, array $passedTo
     }
     return $unlocked;
 }
+
+/**
+ * How many micro-blocks a topic's item pool is split into for the tiered
+ * block pipeline. Below 10 items there isn't enough content to test in
+ * blocks at all -- those topics use the Self-Directed Instance-Lab track
+ * instead (0 signals "not block-based, use the lab track").
+ *
+ * @param int $poolSize Number of questions in the topic's own pool.
+ * @return int Block count (2-6), or 0 for a thin/lab-track topic.
+ */
+function csa_compute_block_count(int $poolSize): int
+{
+    if ($poolSize < 10) {
+        return 0;
+    }
+    if ($poolSize < 15) {
+        return 2;
+    }
+    if ($poolSize < 20) {
+        return 3;
+    }
+    if ($poolSize < 30) {
+        return 4;
+    }
+    return $poolSize >= 36 ? 6 : 5;
+}
+
+/**
+ * Same chain-safe reasoning as csa_compute_unlocked_topics(), one level
+ * down: which block of a topic the user should attempt next. No stored
+ * "current block" column -- derived fresh from which block_number values
+ * have a passing 'topic_block' attempt, same as everything else in this
+ * pipeline.
+ *
+ * @param int   $totalBlocks      From csa_compute_block_count().
+ * @param array $passedBlockNumbers Block numbers (1-indexed) the user has passed.
+ * @return int The next block to attempt (1-indexed), or $totalBlocks + 1
+ *             once every block is passed -- callers treat that sentinel as
+ *             "all blocks cleared, the Gate Check is unlocked."
+ */
+function csa_compute_current_block(int $totalBlocks, array $passedBlockNumbers): int
+{
+    for ($block = 1; $block <= $totalBlocks; $block++) {
+        if (!in_array($block, $passedBlockNumbers, true)) {
+            return $block;
+        }
+    }
+    return $totalBlocks + 1;
+}
+
+/**
+ * Splits an ordered list of question IDs into $totalBlocks roughly-equal
+ * chunks and returns the 1-indexed $blockNumber'th chunk. Block-to-question
+ * mapping is never stored -- every question belongs to exactly one block,
+ * computed fresh from the pool itself each time.
+ *
+ * @param array $orderedQuestionIds A topic's question IDs in a stable order.
+ * @param int   $totalBlocks        From csa_compute_block_count().
+ * @param int   $blockNumber        1-indexed block to return.
+ * @return array The question IDs belonging to that block.
+ */
+function csa_slice_block_questions(array $orderedQuestionIds, int $totalBlocks, int $blockNumber): array
+{
+    if ($totalBlocks <= 0 || $blockNumber < 1 || $blockNumber > $totalBlocks) {
+        return [];
+    }
+    $total = count($orderedQuestionIds);
+    $baseSize = intdiv($total, $totalBlocks);
+    $remainder = $total % $totalBlocks;
+
+    // The first $remainder blocks absorb one extra item each, so a pool
+    // that doesn't divide evenly still uses every question exactly once
+    // instead of leaving a short last block.
+    $start = 0;
+    for ($b = 1; $b < $blockNumber; $b++) {
+        $start += $baseSize + ($b <= $remainder ? 1 : 0);
+    }
+    $thisSize = $baseSize + ($blockNumber <= $remainder ? 1 : 0);
+    return array_slice($orderedQuestionIds, $start, $thisSize);
+}

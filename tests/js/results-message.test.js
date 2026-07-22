@@ -98,3 +98,40 @@ test('buildResultsMessage: topic branch is checked before mini/full, so a topic 
   assert.equal(r.message, null);
   assert.notEqual(r.cta.type, 'review-incorrect');
 });
+
+test('buildResultsMessage: block pass with more blocks remaining points to the next block', () => {
+  const r = ResultsMessage.buildResultsMessage({
+    attemptId: 30, attemptKind: 'topic_block', passed: true, topicId: 4,
+    blockNumber: 2, blocksTotal: 4, nextBlockNumber: 3, allBlocksComplete: false,
+  });
+  assert.equal(r.headline, 'Block 2 cleared! On to Block 3.');
+  assert.deepEqual(r.cta, { type: 'next-block', href: 'topics.html?topicId=4', label: 'Continue to Block 3' });
+});
+
+test('buildResultsMessage: block pass that completes every block points to the Gate Check instead of a next block', () => {
+  const r = ResultsMessage.buildResultsMessage({
+    attemptId: 31, attemptKind: 'topic_block', passed: true, topicId: 4,
+    blockNumber: 4, blocksTotal: 4, nextBlockNumber: null, allBlocksComplete: true,
+  });
+  assert.equal(r.headline, 'Block 4 cleared — every block done! Gate Check unlocked. 🎉');
+  assert.deepEqual(r.cta, { type: 'gate-check-ready', href: 'topics.html?topicId=4', label: 'Start the Gate Check' });
+});
+
+test('buildResultsMessage: block fail routes back to the same block, not the next one or the topic list', () => {
+  const r = ResultsMessage.buildResultsMessage({
+    attemptId: 32, attemptKind: 'topic_block', passed: false, topicId: 4,
+    blockNumber: 2, blocksTotal: 4, nextBlockNumber: null, allBlocksComplete: false,
+  });
+  assert.equal(r.headline, "Not quite — let's review Block 2 again.");
+  assert.equal(r.cta.href, 'topics.html?topicId=4');
+  assert.equal(r.cta.type, 'retry-block');
+});
+
+test('buildResultsMessage: block branch is checked before topic/mini/full, so a block attempt never falls through to other messaging', () => {
+  const r = ResultsMessage.buildResultsMessage({
+    attemptId: 33, attemptKind: 'topic_block', passed: false, topicId: 4,
+    blockNumber: 1, blocksTotal: 4, incorrectCount: 3,
+  });
+  assert.equal(r.message, null);
+  assert.notEqual(r.cta.type, 'review-incorrect');
+});

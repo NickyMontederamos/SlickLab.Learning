@@ -14,10 +14,48 @@
     root.ResultsMessage = factory();
   }
 })(typeof window !== 'undefined' ? window : globalThis, function () {
-  // @param result { attemptId, attemptKind, passed, incorrectCount, parentAttemptId, topicId, nextTopicId }
+  // @param result { attemptId, attemptKind, passed, incorrectCount, parentAttemptId,
+  //                 topicId, nextTopicId, blockNumber, blocksTotal, nextBlockNumber, allBlocksComplete }
   function buildResultsMessage(result) {
     var isMini = result.attemptKind === 'mini';
     var isTopic = result.attemptKind === 'topic';
+    var isBlock = result.attemptKind === 'topic_block';
+
+    if (isBlock && result.passed && result.allBlocksComplete) {
+      return {
+        headline: 'Block ' + result.blockNumber + ' cleared — every block done! Gate Check unlocked. 🎉',
+        message: null,
+        cta: {
+          type: 'gate-check-ready',
+          href: 'topics.html?topicId=' + result.topicId,
+          label: 'Start the Gate Check',
+        },
+      };
+    }
+
+    if (isBlock && result.passed) {
+      return {
+        headline: 'Block ' + result.blockNumber + ' cleared! On to Block ' + result.nextBlockNumber + '.',
+        message: null,
+        cta: {
+          type: 'next-block',
+          href: 'topics.html?topicId=' + result.topicId,
+          label: 'Continue to Block ' + result.nextBlockNumber,
+        },
+      };
+    }
+
+    if (isBlock && !result.passed) {
+      return {
+        headline: "Not quite — let's review Block " + result.blockNumber + ' again.',
+        message: null,
+        cta: {
+          type: 'retry-block',
+          href: 'topics.html?topicId=' + result.topicId,
+          label: 'Back to the Block Review',
+        },
+      };
+    }
 
     if (isTopic && result.passed) {
       return {

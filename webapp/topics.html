@@ -107,7 +107,62 @@
   }
   .lock-icon { font-size: 1.4rem; }
 
-  #lessonPanel { display: none; }
+  /* Lesson panel: a centered modal overlay instead of a static card sitting
+     below the (potentially 20+ card) grid -- opening it used to require
+     scrolling down past however many cards preceded the one you clicked,
+     every time, regardless of scroll position. */
+  #lessonPanel {
+    display: none;
+    position: fixed; inset: 0; z-index: 200;
+    align-items: flex-start; justify-content: center;
+    overflow-y: auto;
+    padding: 40px 16px;
+    background: rgba(5,8,16,0.75);
+    animation: lessonBackdropFade 0.2s ease;
+  }
+  #lessonPanelBox {
+    position: relative;
+    overflow: hidden;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 26px;
+    max-width: 640px;
+    width: 100%;
+    margin: auto 0;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    animation: lessonModalEnter 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  #lessonPanelBox::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: var(--neon-gradient);
+    background-size: 300% 100%;
+    animation: cardBorderShimmer 6s linear infinite;
+  }
+  #lessonCloseX {
+    position: absolute; top: 14px; right: 14px;
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--bg-elevated); border: 1px solid var(--border);
+    color: var(--text-dim); font-size: 1rem; line-height: 1;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+  }
+  #lessonCloseX:hover { color: var(--text); border-color: var(--neon-cyan); transform: rotate(90deg); }
+  @keyframes lessonBackdropFade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes lessonModalEnter {
+    from { opacity: 0; transform: translateY(18px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #lessonPanel { animation: none; }
+    #lessonPanelBox { animation: none; }
+    #lessonPanelBox::before { animation: none; }
+  }
+
   #lessonImages { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
   #lessonImages img { max-width: 260px; border-radius: 8px; border: 1px solid var(--border); }
   #lessonBody { white-space: pre-wrap; line-height: 1.6; }
@@ -116,6 +171,17 @@
   .pipeline-section h3 { font-size: 1rem; margin: 14px 0 6px; }
   .pipeline-section .pipeline-body { white-space: pre-wrap; line-height: 1.6; }
   #blockProgressLabel { font-size: 0.9rem; font-weight: 700; color: var(--neon-cyan); margin-bottom: 8px; }
+
+  .reviewer-toggle-btn {
+    width: 100%; display: flex; align-items: center; justify-content: space-between;
+    background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px 14px; color: var(--text); font-weight: 700; font-size: 0.95rem;
+    cursor: pointer; transition: border-color 0.15s ease;
+  }
+  .reviewer-toggle-btn:hover { border-color: var(--neon-cyan); }
+  #reviewerToggleIcon { transition: transform 0.2s ease; color: var(--neon-cyan); }
+  #reviewerToggleIcon.open { transform: rotate(180deg); }
+  #reviewerBody { margin-top: 10px; padding: 12px 14px; background: var(--bg-elevated); border-radius: 8px; border-left: 3px solid var(--neon-cyan); }
 </style>
 </head>
 <body>
@@ -133,12 +199,23 @@
 
   <div class="topic-grid" id="topicGrid"></div>
 
-  <div class="card" id="lessonPanel">
+  <div id="lessonPanel">
+    <div id="lessonPanelBox">
+    <button id="lessonCloseX" type="button" aria-label="Close">&#10005;</button>
     <div class="fc-label" id="lessonCategory"></div>
     <h2 id="lessonTitle"></h2>
     <p class="muted" id="lessonStatusNote"></p>
     <div id="lessonBody"></div>
     <div id="lessonImages"></div>
+
+    <div class="pipeline-section" id="reviewerSection" style="display:none;">
+      <button type="button" class="reviewer-toggle-btn" id="reviewerToggleBtn">
+        <span>Quick Reviewer <span class="muted" style="font-weight:400;">&mdash; high-yield cram sheet</span></span>
+        <span id="reviewerToggleIcon">&#9660;</span>
+      </button>
+      <p class="muted" id="reviewerStatusNote"></p>
+      <div class="pipeline-body" id="reviewerBody" style="display:none;"></div>
+    </div>
 
     <div class="pipeline-section" id="blockSection" style="display:none;">
       <div id="blockProgressLabel"></div>
@@ -159,6 +236,7 @@
     <div class="btn-row" style="margin-top:16px;">
       <button class="btn secondary" id="closeLessonBtn" type="button">Close</button>
       <button class="btn" id="startTopicQuizBtn" type="button">Start Topic Quiz</button>
+    </div>
     </div>
   </div>
 </div>

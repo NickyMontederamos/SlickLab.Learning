@@ -76,11 +76,12 @@ final class LeaderboardTest extends TestCase
         $this->assertSame('Diamond', $rank['label']);
     }
 
-    public function testEveryRankHasAnEmoji(): void
+    public function testEveryRankHasAValidTierSlug(): void
     {
+        $validTiers = ['bronze', 'silver', 'gold', 'platinum', 'diamond'];
         foreach ([0, 100, 250, 400, 550] as $points) {
             $rank = csa_rank_for_points($points);
-            $this->assertNotEmpty($rank['emoji']);
+            $this->assertContains($rank['tier'], $validTiers);
         }
     }
 }

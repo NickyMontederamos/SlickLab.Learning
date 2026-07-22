@@ -25,11 +25,15 @@
   async function loadTopic(topicId) {
     currentTopicId = topicId;
     document.getElementById('saveStatus').textContent = '';
+    document.getElementById('saveReviewerStatus').textContent = '';
     document.getElementById('lessonBodyInput').value = 'Loading...';
+    document.getElementById('reviewerBodyInput').value = '';
     document.getElementById('blockContentFields').innerHTML = '';
     const lesson = await API.topicLesson(topicId);
     document.getElementById('lessonBodyInput').value = lesson.lessonBodyMd || '';
     document.getElementById('lessonStatusSelect').value = lesson.lessonStatus;
+    document.getElementById('reviewerBodyInput').value = lesson.reviewerMd || '';
+    document.getElementById('reviewerStatusSelect').value = lesson.reviewerStatus;
     renderImages(lesson.images);
     renderBlockContentFields(topicId, lesson);
   }
@@ -152,6 +156,23 @@
         currentTopicId,
         document.getElementById('lessonBodyInput').value,
         document.getElementById('lessonStatusSelect').value
+      );
+      statusEl.textContent = 'Saved.';
+      setTimeout(() => { if (statusEl.textContent === 'Saved.') statusEl.textContent = ''; }, 2000);
+    } catch (e) {
+      statusEl.textContent = 'Could not save: ' + e.message;
+    }
+  });
+
+  document.getElementById('saveReviewerBtn').addEventListener('click', async () => {
+    if (!currentTopicId) return;
+    const statusEl = document.getElementById('saveReviewerStatus');
+    statusEl.textContent = 'Saving...';
+    try {
+      await API.adminSaveReviewer(
+        currentTopicId,
+        document.getElementById('reviewerBodyInput').value,
+        document.getElementById('reviewerStatusSelect').value
       );
       statusEl.textContent = 'Saved.';
       setTimeout(() => { if (statusEl.textContent === 'Saved.') statusEl.textContent = ''; }, 2000);

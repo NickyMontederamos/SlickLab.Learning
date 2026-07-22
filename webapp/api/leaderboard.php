@@ -132,7 +132,7 @@ foreach ($rows as $r) {
         'topicsMastered' => $topicsMastered,
         'points' => $points,
         'rankLabel' => $rank['label'],
-        'rankEmoji' => $rank['emoji'],
+        'rankTier' => $rank['tier'],
     ];
 }
 

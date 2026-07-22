@@ -1,0 +1,43 @@
+{
+  "Platform Admin": "Platform Administration covers the instance-wide settings and structures a CSA manages day to day: System Properties, plugins, application menus, system logs, and scheduled jobs.\n\nThink of this as the \"running the instance itself\" topic, as opposed to configuring any one specific feature.",
+
+  "Users, Groups & Roles": "This topic covers how ServiceNow identifies who someone is (users), who they work with (groups), and what they're allowed to do (roles).\n\nRoles are the foundation for the Security & ACL topic that follows, so the two are closely linked.",
+
+  "Security & ACL": "Access Control Lists (ACLs) are the core permission system in ServiceNow, deciding who can read, write, create, or delete records and fields.\n\nThis is one of the densest topics on the real exam — expect several questions on how roles, conditions, and table inheritance interact.",
+
+  "Forms": "Forms are how a single record gets displayed and edited. This topic covers form layout, UI Policies (client-side field behavior), and UI Actions (buttons and links that run scripts).\n\nUnderstanding the difference between a UI Policy and a UI Action is a common exam distinction.",
+
+  "Lists & Filters": "Lists show many records at once, and filters narrow down which ones you see. This topic covers list personalization, the condition builder, breadcrumbs, and related lists.\n\nA lot of day-to-day ServiceNow work happens in a list view, so this topic tends to be practical and scenario-based on the real exam.",
+
+  "Data Model": "The data model is how ServiceNow organizes information: tables, table extension, the dictionary, and reference fields.\n\nThe Task → Incident/Problem/Change extension pattern covered here comes up again almost everywhere else in the exam, so it's worth having solid before moving on.",
+
+  "CMDB": "The Configuration Management Database (CMDB) tracks Configuration Items (CIs) — servers, applications, and everything else that makes up your IT environment — and how they relate to each other.\n\nCMDB reuses the same table-extension pattern from Data Model, applied to CI classes specifically.",
+
+  "Business Logic": "Business Rules, Script Includes, and GlideRecord are how ServiceNow automates what happens when data changes — this is the \"behind the scenes\" scripting layer of the platform.\n\nExpect questions about WHEN a Business Rule runs (before/after/async/display) more than what the script itself does.",
+
+  "Update Sets": "Update Sets track configuration changes so they can be reviewed and moved between instances (like from a dev instance to a test instance).\n\nThis is a shorter topic, but the Preview → Commit sequence is a frequent, precise exam question.",
+
+  "Service Catalog": "The Service Catalog is where end users request things — hardware, software, access — through a structured, guided form (a catalog item).\n\nThis topic connects to both Forms (catalog UI policies) and Flow Designer (what happens after a request is submitted).",
+
+  "Knowledge Management": "Knowledge Management covers how support articles are written, categorized, published, and searched — the self-service side of ServiceNow.\n\nA relatively compact topic; know the article lifecycle (Draft → Published → Retired) well.",
+
+  "Notifications": "Notifications are how ServiceNow sends email (or other channel) alerts when something happens — a record changes, or a specific event fires.\n\nThis topic has a small question pool, so it uses the hands-on lab format instead of a graded block quiz.",
+
+  "Reporting": "Reporting covers how raw ServiceNow data becomes charts, tables, and dashboards that people actually look at.\n\nKnow the difference between a Report (one table) and a Dashboard (multiple reports/widgets combined).",
+
+  "Data Import": "Data Import covers bringing external data (spreadsheets, other systems) into ServiceNow safely, through a staging table, rather than writing directly to production tables.\n\nThe Import Set → Transform Map pipeline is the core sequence to know here.",
+
+  "Flow Designer": "Flow Designer is ServiceNow's modern, no-code automation builder — the current standard for building workflows, replacing the older Workflow Editor.\n\nThis topic pairs naturally with Business Logic (Business Rules), since both are ways to make things happen automatically, just with different tools.",
+
+  "Scripting & Automation": "This topic covers the scripting fundamentals that show up across the platform: Client Scripts, Script Includes, and GlideRecord.\n\nA small question pool means this topic uses the hands-on lab format — a great chance to actually write and test a script yourself instead of just reading about it.",
+
+  "Collaboration": "Collaboration covers ServiceNow's built-in communication tools: Connect Chat (tied to a specific record) and Live Feed (a broader activity stream).\n\nA small, focused topic using the hands-on lab format.",
+
+  "Virtual Agent": "Virtual Agent is ServiceNow's chatbot builder — conversational \"topics\" that can answer questions or complete simple tasks without a live agent.\n\nA small question pool means this uses the hands-on lab format; building even one simple bot topic goes a long way for understanding this feature.",
+
+  "ITSM & SLA": "This topic covers the core ITSM processes (Incident, Problem, Change) and Service Level Agreements (SLAs) — the timers that track whether work is completed on time.\n\nA small question pool means this uses the hands-on lab format instead of a graded block quiz.",
+
+  "Testing/ATF": "The Automated Test Framework (ATF) lets ServiceNow test itself — recording form interactions and assertions instead of manually clicking through test cases every time.\n\nA small question pool means this uses the hands-on lab format.",
+
+  "Agile/VTB": "Agile Development and Visual Task Boards (VTB) cover how ServiceNow itself can be used to plan and track work — Stories, Sprints, and Kanban-style boards.\n\nA small question pool means this uses the hands-on lab format."
+}

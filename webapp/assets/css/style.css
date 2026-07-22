@@ -334,6 +334,19 @@ table.history tbody tr.top-row td:first-child { font-weight: 700; }
 .stat-box .num { font-size: 1.6rem; font-weight: 800; }
 .stat-box .label { font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; }
 
+/* Inline-SVG medal/trophy icons (webapp/assets/js/lib/rank-icons.js) --
+   color comes from `color` since the SVG shapes fill with currentColor;
+   drop-shadow approximates the glow language used elsewhere (passed-card
+   breathe, badge pulse) without a full keyframe animation for a small
+   inline icon that can appear many times per page (a whole leaderboard). */
+.rank-icon { vertical-align: -3px; }
+.rank-icon--bronze { color: #cd7f32; filter: drop-shadow(0 0 3px rgba(205,127,50,0.5)); }
+.rank-icon--silver { color: #c7d0da; filter: drop-shadow(0 0 3px rgba(199,208,218,0.5)); }
+.rank-icon--gold { color: var(--neon-gold); filter: drop-shadow(0 0 4px rgba(255,153,0,0.6)); }
+.rank-icon--platinum { color: var(--neon-cyan); filter: drop-shadow(0 0 4px rgba(0,243,255,0.6)); }
+.rank-icon--diamond { filter: drop-shadow(0 0 5px rgba(255,0,127,0.5)) drop-shadow(0 0 5px rgba(0,243,255,0.5)); }
+.trophy-icon { color: var(--neon-gold); vertical-align: -3px; filter: drop-shadow(0 0 4px rgba(255,153,0,0.5)); }
+
 .brand-accent { color: var(--accent); font-weight: 600; font-size: 0.85em; }
 
 .site-footer {

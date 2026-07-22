@@ -10,7 +10,7 @@ if ($topicId <= 0) {
 
 $pdo = csa_db();
 
-$stmt = $pdo->prepare('SELECT id, name, category_key, lesson_body_md, lesson_status FROM topics WHERE id = ?');
+$stmt = $pdo->prepare('SELECT id, name, category_key, lesson_body_md, lesson_status, reviewer_md, reviewer_status FROM topics WHERE id = ?');
 $stmt->execute([$topicId]);
 $topic = $stmt->fetch();
 if (!$topic) {
@@ -52,6 +52,8 @@ json_out([
     'name' => $topic['name'],
     'lessonBodyMd' => $topic['lesson_body_md'],
     'lessonStatus' => $topic['lesson_status'],
+    'reviewerMd' => $topic['reviewer_md'],
+    'reviewerStatus' => $topic['reviewer_status'],
     'images' => $images,
     'pipelineMode' => $pipelineMode,
     'blocksTotal' => $blocksTotal > 0 ? $blocksTotal : null,

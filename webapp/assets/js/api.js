@@ -111,6 +111,8 @@ const API = (() => {
     topicBlockStart: (topicId) => call('topic_block_start.php', { method: 'POST', body: { topicId } }),
     adminSaveLesson: (topicId, lessonBodyMd, lessonStatus) =>
       call('admin_topic_lesson_save.php', { method: 'POST', body: { topicId, lessonBodyMd, lessonStatus } }),
+    adminSaveReviewer: (topicId, reviewerMd, reviewerStatus) =>
+      call('admin_topic_reviewer_save.php', { method: 'POST', body: { topicId, reviewerMd, reviewerStatus } }),
     adminSaveBlockContent: (topicId, blockNumber, contentType, bodyMd, status) =>
       call('admin_topic_block_content_save.php', { method: 'POST', body: { topicId, blockNumber, contentType, bodyMd, status } }),
     adminUploadTopicImage: (topicId, file, altText) => {
@@ -185,7 +187,7 @@ function showV2Announcement() {
       <h2 style="margin-top:0;">🚀 What's New in v2</h2>
       <ul style="padding-left:20px; line-height:1.7;">
         <li><strong>⚔️ Quiz Battle</strong> &mdash; live multiplayer head-to-head rounds with the crew, speed-based scoring, streaks, and read-aloud questions.</li>
-        <li><strong>🏆 Leaderboards on the dashboard</strong> &mdash; top Mock Exam scores and top Quiz Battle players, right up front.</li>
+        <li><strong>${typeof RankIcons !== 'undefined' ? RankIcons.trophy() : ''} Leaderboards on the dashboard</strong> &mdash; top Mock Exam scores and top Quiz Battle players, right up front.</li>
         <li>Player avatars, sound effects, and a live scoreboard to make Quiz Battle feel like an actual game show.</li>
       </ul>
       <div class="modal-actions">

@@ -59,6 +59,8 @@ CREATE TABLE IF NOT EXISTS topics (
     sort_order SMALLINT UNSIGNED NOT NULL,
     lesson_body_md MEDIUMTEXT NULL,
     lesson_status ENUM('placeholder','draft','published') NOT NULL DEFAULT 'placeholder',
+    reviewer_md MEDIUMTEXT NULL,
+    reviewer_status ENUM('placeholder','draft','published') NOT NULL DEFAULT 'placeholder',
     updated_by INT UNSIGNED NULL,
     updated_at DATETIME NULL,
     FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL,

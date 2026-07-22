@@ -676,7 +676,7 @@
     if (winner) {
       spotlight.innerHTML = `
         <div class="winner-avatar-wrap">${avatarHtml(winner.username, 140)}</div>
-        <div class="winner-name-banner">🏆 ${escapeHtml(winner.username)} — ${winner.score} pts</div>
+        <div class="winner-name-banner">${RankIcons.trophy()} ${escapeHtml(winner.username)} — ${winner.score} pts</div>
       `;
       spotlight.style.display = 'flex';
     } else {
@@ -685,10 +685,10 @@
     spawnConfetti(36);
 
     document.getElementById('battleResultsCard').innerHTML = `
-      <h1>🏆 Battle Over</h1>
+      <h1>${RankIcons.trophy()} Battle Over</h1>
       ${results.map((r, i) => `
         <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--border);">
-          <span style="display:flex; align-items:center; gap:8px;">${i + 1}. ${avatarHtml(r.username, 32)}${escapeHtml(r.username)}${r.score === top ? ' 🏆' : ''}${r.mvp ? ' ⚡ MVP' : ''}${r.bestStreak >= 2 ? ` 🔥${r.bestStreak}` : ''}</span>
+          <span style="display:flex; align-items:center; gap:8px;">${i + 1}. ${avatarHtml(r.username, 32)}${escapeHtml(r.username)}${r.score === top ? ' ' + RankIcons.trophy() : ''}${r.mvp ? ' ⚡ MVP' : ''}${r.bestStreak >= 2 ? ` 🔥${r.bestStreak}` : ''}</span>
           <span>${r.score} pts</span>
         </div>`).join('')}
     `;

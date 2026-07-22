@@ -123,7 +123,8 @@
     renderGrid();
 
     const panel = document.getElementById('lessonPanel');
-    panel.style.display = 'block';
+    panel.style.display = 'flex';
+    document.body.style.overflow = 'hidden'; // lock background scroll while the modal is open
     document.getElementById('lessonCategory').textContent = `Topic ${topic.sortOrder} of ${topics.length}`;
     document.getElementById('lessonTitle').textContent = topic.name;
     document.getElementById('lessonBody').textContent = 'Loading...';
@@ -131,6 +132,9 @@
     document.getElementById('lessonStatusNote').textContent = '';
     document.getElementById('blockSection').style.display = 'none';
     document.getElementById('labSection').style.display = 'none';
+    document.getElementById('reviewerSection').style.display = 'none';
+    document.getElementById('reviewerBody').style.display = 'none';
+    document.getElementById('reviewerToggleIcon').classList.remove('open');
 
     const vm = TopicProgress.buildTopicCardViewModel(topic, { isOpen: true });
     const startBtn = document.getElementById('startTopicQuizBtn');
@@ -148,6 +152,13 @@
       document.getElementById('lessonImages').innerHTML = lesson.images.map((img) =>
         `<img src="${escapeHtml(img.url)}" alt="${escapeHtml(img.altText || '')}" loading="lazy">`
       ).join('');
+      if (lesson.reviewerMd) {
+        document.getElementById('reviewerSection').style.display = 'block';
+        document.getElementById('reviewerStatusNote').textContent = lesson.reviewerStatus === 'published'
+          ? ''
+          : '⚠ This reviewer is still a draft/placeholder.';
+        document.getElementById('reviewerBody').textContent = lesson.reviewerMd;
+      }
       renderPipelineSections(topic, lesson);
     } catch (e) {
       // Usually transient (a flaky response from the host, not a real
@@ -166,13 +177,37 @@
       lessonBody.appendChild(retryBtn);
     }
 
-    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    panel.scrollTop = 0; // reset in case a previous open scrolled down
   }
 
-  document.getElementById('closeLessonBtn').addEventListener('click', () => {
+  function closeLesson() {
     openTopicId = null;
     document.getElementById('lessonPanel').style.display = 'none';
+    document.body.style.overflow = '';
     renderGrid();
+  }
+
+  document.getElementById('reviewerToggleBtn').addEventListener('click', () => {
+    const body = document.getElementById('reviewerBody');
+    const icon = document.getElementById('reviewerToggleIcon');
+    const willShow = body.style.display === 'none';
+    body.style.display = willShow ? 'block' : 'none';
+    icon.classList.toggle('open', willShow);
+  });
+
+  document.getElementById('closeLessonBtn').addEventListener('click', closeLesson);
+  document.getElementById('lessonCloseX').addEventListener('click', closeLesson);
+
+  // Click on the backdrop itself (not the modal box or anything inside it)
+  // also closes -- e.target is only the overlay element when the click
+  // didn't land on any descendant, since clicks bubble up from whatever was
+  // actually clicked.
+  document.getElementById('lessonPanel').addEventListener('click', (e) => {
+    if (e.target.id === 'lessonPanel') closeLesson();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && openTopicId !== null) closeLesson();
   });
 
   document.getElementById('startTopicQuizBtn').addEventListener('click', (e) => {

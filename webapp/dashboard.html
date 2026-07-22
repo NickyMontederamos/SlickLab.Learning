@@ -87,11 +87,11 @@
 
   <div class="grid-2">
     <div class="card">
-      <h2>🏆 Top Overall Ranks</h2>
+      <h2><span id="rankWidgetIcon"></span> Top Overall Ranks</h2>
       <div id="examLeaderboardWidget"><p class="muted">Loading...</p></div>
     </div>
     <div class="card">
-      <h2>🏆 Top Quiz Battle Players</h2>
+      <h2><span id="battleWidgetIcon"></span> Top Quiz Battle Players</h2>
       <div id="battleLeaderboardWidget"><p class="muted">Loading...</p></div>
     </div>
   </div>
@@ -134,11 +134,14 @@
 </footer>
 
 <script src="assets/js/api.js"></script>
+<script src="assets/js/lib/rank-icons.js"></script>
 <script>
 (async () => {
   const me = await requireAuth();
   if (!me) return;
   document.getElementById('whoami').textContent = me.username;
+  document.getElementById('rankWidgetIcon').innerHTML = RankIcons.trophy();
+  document.getElementById('battleWidgetIcon').innerHTML = RankIcons.trophy();
 
   if (sessionStorage.getItem('showConfidentialityNotice') === '1') {
     sessionStorage.removeItem('showConfidentialityNotice');
@@ -175,11 +178,10 @@
   if (!topRanked.length) {
     examWidget.innerHTML = '<p class="muted">No activity yet — be the first!</p>';
   } else {
-    const medals = ['🥇', '🥈', '🥉'];
     examWidget.innerHTML = topRanked.map((row, i) => `
       <div class="leaderboard-row${i === 0 ? ' top' : ''}">
-        <span>${medals[i] || `${i + 1}.`} ${escapeHtml(row.username)}</span>
-        <span class="muted">${row.rankEmoji} ${row.rankLabel} &middot; ${row.points} pts</span>
+        <span>${RankIcons.medalByPlace(i) || `${i + 1}.`} ${escapeHtml(row.username)}</span>
+        <span class="muted">${RankIcons.medal(row.rankTier)} ${row.rankLabel} &middot; ${row.points} pts</span>
       </div>`).join('') + '<p style="margin-top:10px;"><a href="leaderboard.html">View full leaderboard &rarr;</a></p>';
   }
 
@@ -190,10 +192,9 @@
   if (!topBattlers.length) {
     battleWidget.innerHTML = '<p class="muted">No Quiz Battles played yet — start one above!</p>';
   } else {
-    const medals = ['🥇', '🥈', '🥉'];
     battleWidget.innerHTML = topBattlers.map((row, i) => `
       <div class="leaderboard-row${i === 0 ? ' top' : ''}">
-        <span>${medals[i] || `${i + 1}.`} ${escapeHtml(row.username)}</span>
+        <span>${RankIcons.medalByPlace(i) || `${i + 1}.`} ${escapeHtml(row.username)}</span>
         <span class="muted">${row.battlesWon} win${row.battlesWon === 1 ? '' : 's'} / ${row.battlesPlayed} played</span>
       </div>`).join('') + '<p style="margin-top:10px;"><a href="leaderboard.html">View full leaderboard &rarr;</a></p>';
   }
@@ -207,7 +208,7 @@
     <div class="stat-box"><div class="num" style="color:var(--neon-cyan)">${questions.length}</div><div class="label">Total Questions</div></div>
     <div class="stat-box"><div class="num" style="color:var(--success)">${known}</div><div class="label">Known</div></div>
     <div class="stat-box"><div class="num" style="color:var(--warning)">${review}</div><div class="label">Needs Review</div></div>
-    <div class="stat-box"><div class="num" style="color:var(--neon-magenta)">${myRank ? myRank.rankEmoji + ' ' + myRank.rankLabel : '—'}</div><div class="label">${myRank ? myRank.points + ' pts' : 'Rank'}</div></div>
+    <div class="stat-box"><div class="num">${myRank ? RankIcons.medal(myRank.rankTier) + ' ' + myRank.rankLabel : '—'}</div><div class="label">${myRank ? myRank.points + ' pts' : 'Rank'}</div></div>
     <div class="stat-box"><div class="num" style="color:var(--neon-gold)">${topicsMastered} / ${topics.length}</div><div class="label">Topics Mastered</div></div>
   `;
 

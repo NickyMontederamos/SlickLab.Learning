@@ -22,22 +22,27 @@ function csa_compute_leaderboard_points(array $stats): int
 }
 
 /**
- * @return array{label: string, emoji: string}
+ * `tier` is a slug the frontend maps to an inline-SVG icon
+ * (webapp/assets/js/lib/rank-icons.js's RankIcons.medal()) instead of an
+ * emoji -- kept as a plain machine-readable key here rather than baking any
+ * presentation into the API response.
+ *
+ * @return array{label: string, tier: string}
  */
 function csa_rank_for_points(int $points): array
 {
     $tiers = [
-        ['min' => 550, 'label' => 'Diamond', 'emoji' => '💎'],
-        ['min' => 400, 'label' => 'Platinum', 'emoji' => '🌟'],
-        ['min' => 250, 'label' => 'Gold', 'emoji' => '🥇'],
-        ['min' => 100, 'label' => 'Silver', 'emoji' => '🥈'],
-        ['min' => 0, 'label' => 'Bronze', 'emoji' => '🥉'],
+        ['min' => 550, 'label' => 'Diamond', 'tier' => 'diamond'],
+        ['min' => 400, 'label' => 'Platinum', 'tier' => 'platinum'],
+        ['min' => 250, 'label' => 'Gold', 'tier' => 'gold'],
+        ['min' => 100, 'label' => 'Silver', 'tier' => 'silver'],
+        ['min' => 0, 'label' => 'Bronze', 'tier' => 'bronze'],
     ];
     foreach ($tiers as $tier) {
         if ($points >= $tier['min']) {
-            return ['label' => $tier['label'], 'emoji' => $tier['emoji']];
+            return ['label' => $tier['label'], 'tier' => $tier['tier']];
         }
     }
     // Unreachable: the last tier's min is 0, so the loop above always matches.
-    return ['label' => 'Bronze', 'emoji' => '🥉'];
+    return ['label' => 'Bronze', 'tier' => 'bronze'];
 }

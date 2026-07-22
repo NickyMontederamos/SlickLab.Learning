@@ -8,7 +8,7 @@
 <style>
   #adminDenied { display: none; }
   #adminEditor { display: none; }
-  #lessonBodyInput {
+  #lessonBodyInput, #reviewerBodyInput {
     width: 100%; min-height: 220px; background: var(--bg); border: 1px solid var(--border);
     color: var(--text); border-radius: 8px; padding: 10px 12px; font-size: 0.92rem;
     resize: vertical; font-family: inherit; line-height: 1.5;
@@ -65,6 +65,23 @@
       <div class="btn-row" style="margin-top:12px;">
         <button class="btn" id="saveLessonBtn" type="button">Save Lesson</button>
         <span id="saveStatus" class="muted"></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="btn-row" style="justify-content:space-between; align-items:center;">
+        <h2 style="margin:0;">Quick Reviewer (high-yield cram sheet)</h2>
+        <select id="reviewerStatusSelect">
+          <option value="placeholder">Placeholder</option>
+          <option value="draft">Draft</option>
+          <option value="published">Published</option>
+        </select>
+      </div>
+      <p class="muted">Dense, scannable, bulleted -- not prose. Meant for a last-pass review right before a Gate Check or the Full Mock Exam.</p>
+      <textarea id="reviewerBodyInput" placeholder="Write the high-yield reviewer for this topic..."></textarea>
+      <div class="btn-row" style="margin-top:12px;">
+        <button class="btn" id="saveReviewerBtn" type="button">Save Reviewer</button>
+        <span id="saveReviewerStatus" class="muted"></span>
       </div>
     </div>
 

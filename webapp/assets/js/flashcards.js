@@ -5,7 +5,8 @@
   let allQuestions = [];
   let filtered = [];
   let idx = 0;
-  let revealed = false;
+  let answered = false; // has the current card been submitted (or skipped) yet?
+  let selectedLetters = [];
   let currentFilter = 'due';
   let searchTerm = '';
   let currentCategory = '';
@@ -20,6 +21,21 @@
 
   function shortText(s, max) {
     return s.length > max ? s.slice(0, max - 1) + '…' : s;
+  }
+
+  // Unbiased Fisher-Yates shuffle, in place on a copy. Used to interleave
+  // categories in Study mode -- mixed-topic practice is measurably better
+  // for long-term retention than working through one category in a block,
+  // even though it feels harder in the moment (Bjork's "desirable
+  // difficulties"), and it also stops positional memorization ("this is the
+  // 3rd card so the answer is B") from substituting for real recall.
+  function shuffled(arr) {
+    const out = arr.slice();
+    for (let i = out.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [out[i], out[j]] = [out[j], out[i]];
+    }
+    return out;
   }
 
   // --- Text-to-speech ---
@@ -63,7 +79,7 @@
       );
     }
 
-    filtered = base;
+    filtered = shuffled(base);
     idx = 0;
     render();
     if (currentMode === 'match') startMatchRound();
@@ -71,14 +87,57 @@
   }
 
   // --- Study mode ---
+  // Renders the option list. Unanswered: clickable radio/checkbox rows that
+  // build up `selectedLetters`. Answered: locked, color-coded green/red exactly
+  // like the Mock Exam's post-submission review (same classes/markup), so the
+  // two screens teach the same visual language.
+  function renderOptionRows(q, showResult) {
+    const inputType = q.chooseN > 1 ? 'checkbox' : 'radio';
+    document.getElementById('fcOptions').innerHTML = q.options.map(o => {
+      const isSelected = selectedLetters.includes(o.letter);
+      let cls = isSelected ? 'selected' : '';
+      if (showResult) {
+        if (o.correct) cls = 'correct';
+        else if (isSelected) cls = 'incorrect';
+      }
+      return `
+        <label class="option-row ${cls}" data-letter="${o.letter}">
+          <input type="${inputType}" name="fcopt-${q.id}" ${isSelected ? 'checked' : ''} ${showResult ? 'disabled' : ''}>
+          <span><strong>${o.letter}.</strong> ${escapeHtml(o.text)}${showResult && isSelected ? ' <em>(your answer)</em>' : ''}</span>
+        </label>`;
+    }).join('');
+
+    if (showResult) return;
+
+    document.querySelectorAll('#fcOptions .option-row').forEach(row => {
+      row.addEventListener('click', (e) => {
+        e.preventDefault();
+        const letter = row.dataset.letter;
+        if (q.chooseN > 1) {
+          let sel = selectedLetters.includes(letter)
+            ? selectedLetters.filter(l => l !== letter)
+            : [...selectedLetters, letter];
+          if (sel.length > q.chooseN) sel = sel.slice(sel.length - q.chooseN);
+          selectedLetters = sel;
+        } else {
+          selectedLetters = [letter];
+        }
+        renderOptionRows(q, false);
+      });
+    });
+  }
+
   function render() {
-    revealed = false;
+    answered = false;
+    selectedLetters = [];
     const total = filtered.length;
     document.getElementById('fcPosition').textContent = total ? `Card ${idx + 1} / ${total}` : 'No cards in this filter';
     const answerEl = document.getElementById('fcAnswer');
     answerEl.style.display = 'none';
     document.getElementById('fcWalkthroughWrap').style.display = 'none';
     document.getElementById('fcWalkthrough').style.display = 'none';
+    document.getElementById('markGood').classList.remove('suggested');
+    document.getElementById('markAgain').classList.remove('suggested');
     resetCardTransform();
 
     const noteBox = document.getElementById('fcNoteBox');
@@ -95,6 +154,7 @@
       document.getElementById('fcOptions').innerHTML = '';
       document.getElementById('fcCategory').textContent = '';
       document.getElementById('fcConfidenceBadge').innerHTML = '';
+      document.getElementById('fcSubmitBtn').style.display = 'none';
       noteText.value = '';
       noteToggle.textContent = '📝 Add a note';
       return;
@@ -103,9 +163,8 @@
     const q = filtered[idx];
     document.getElementById('fcCategory').textContent = `${q.category} · #${idx + 1}`;
     document.getElementById('fcQuestion').textContent = q.text;
-    document.getElementById('fcOptions').innerHTML = q.options
-      .map(o => `<div><strong>${o.letter}.</strong> ${escapeHtml(o.text)}</div>`)
-      .join('');
+    renderOptionRows(q, false);
+    document.getElementById('fcSubmitBtn').style.display = 'inline-block';
 
     const confBadge = document.getElementById('fcConfidenceBadge');
     confBadge.innerHTML = q.confidence !== 'high'
@@ -121,14 +180,29 @@
     speakSegments(TtsSegments.buildSpeechSegments(q, { includeQuestion: true, includeAnswer: false }));
   }
 
-  function reveal() {
+  // Grades whatever is currently selected (possibly nothing, e.g. a
+  // swipe-to-skip) via the same exact-match logic exam_submit.php uses
+  // server-side, then flips the card to a color-coded, Mock-Exam-style
+  // review with a suggested (not forced) Good/Again grade.
+  function submitAnswer() {
     const total = filtered.length;
-    if (!total) return;
-    revealed = true;
+    if (!total || answered) return;
+    answered = true;
     const q = filtered[idx];
+    const correctLetters = q.options.filter(o => o.correct).map(o => o.letter);
+    const normalized = FlashcardGrading.normalizeSelectedLetters(selectedLetters);
+    const isCorrect = FlashcardGrading.isAnswerCorrect(normalized, correctLetters);
+
+    document.getElementById('fcSubmitBtn').style.display = 'none';
+    renderOptionRows(q, true);
+
     const correctLine = q.options.filter(o => o.correct).map(o => `${o.letter}. ${o.text}`).join('<br>');
+    const statusLine = normalized.length
+      ? `<div class="correct-line" style="color:${isCorrect ? 'var(--success)' : 'var(--danger)'}">${isCorrect ? '✔ Correct!' : '✘ Not quite'}</div>`
+      : '';
     document.getElementById('fcAnswer').style.display = 'block';
     document.getElementById('fcAnswer').innerHTML = `
+      ${statusLine}
       <div class="correct-line">Correct answer: ${correctLine}</div>
       <div class="muted">${escapeHtml(q.explanation)}</div>
       ${q.wrongAnswerNotes ? `<div class="muted" style="margin-top:8px;"><strong>Watch out:</strong> ${escapeHtml(q.wrongAnswerNotes)}</div>` : ''}
@@ -142,6 +216,11 @@
     walkthroughEl.style.display = 'none'; // starts collapsed; button toggles it
     document.getElementById('fcWalkthroughWrap').style.display = q.walkthrough ? 'block' : 'none';
 
+    // A nudge, not a verdict -- correctness and how well you feel you know a
+    // card aren't the same thing, so both buttons stay fully clickable.
+    document.getElementById('markGood').classList.toggle('suggested', isCorrect);
+    document.getElementById('markAgain').classList.toggle('suggested', !isCorrect);
+
     speakSegments(TtsSegments.buildSpeechSegments(q, { includeQuestion: false, includeAnswer: true }));
   }
 
@@ -149,7 +228,7 @@
     const total = filtered.length;
     if (!total) return;
     const q = filtered[idx];
-    const selfConfidence = revealed ? parseInt(confidenceSlider.value, 10) : null;
+    const selfConfidence = answered ? parseInt(confidenceSlider.value, 10) : null;
     try {
       const res = await API.reviewFlashcard(q.id, result, selfConfidence);
       q.progress = res.status;
@@ -214,6 +293,7 @@
   document.getElementById('prevBtn').addEventListener('click', goPrev);
   document.getElementById('markGood').addEventListener('click', () => review('good'));
   document.getElementById('markAgain').addEventListener('click', () => review('again'));
+  document.getElementById('fcSubmitBtn').addEventListener('click', submitAnswer);
   document.getElementById('fcShowMeHowBtn').addEventListener('click', (e) => {
     // #flashcard has its own click-to-toggle-reveal listener; without this,
     // the click bubbles up to it and immediately collapses the card back
@@ -234,7 +314,7 @@
     const q = filtered[idx];
     if (!q) return;
     speakSegments(
-      TtsSegments.buildSpeechSegments(q, { includeQuestion: !revealed, includeAnswer: revealed }),
+      TtsSegments.buildSpeechSegments(q, { includeQuestion: !answered, includeAnswer: answered }),
       { force: true }
     );
   });
@@ -267,7 +347,15 @@
     if (currentMode !== 'study') return;
     if (e.key === 'ArrowRight') goNext();
     if (e.key === 'ArrowLeft') goPrev();
-    if (e.key === ' ') { e.preventDefault(); if (!revealed) reveal(); }
+    if (e.key === ' ') { e.preventDefault(); if (!answered) submitAnswer(); }
+
+    // Letter keys toggle the matching option, mirroring the on-card click --
+    // lets a keyboard-only reviewer select and submit without touching the mouse.
+    if (!answered && /^[A-Za-z]$/.test(e.key)) {
+      const letter = e.key.toUpperCase();
+      const row = document.querySelector(`#fcOptions .option-row[data-letter="${letter}"]`);
+      if (row) { e.preventDefault(); row.click(); }
+    }
   });
 
   // --- Per-card notes ---
@@ -332,7 +420,7 @@
   }
 
   cardEl.addEventListener('pointerdown', (e) => {
-    if (e.target.closest('#fcNoteBox') || e.target.closest('#fcNoteToggle') || e.target.closest('#fcWalkthroughWrap')) return;
+    if (e.target.closest('#fcNoteBox') || e.target.closest('#fcNoteToggle') || e.target.closest('#fcWalkthroughWrap') || e.target.closest('#fcOptions') || e.target.closest('#fcSubmitBtn')) return;
     if (!filtered.length) return;
     dragging = true;
     pointerMoved = false;
@@ -363,17 +451,18 @@
 
     if (pointerMoved) suppressClick = true;
 
-    if (Math.abs(dragDeltaX) >= SWIPE_THRESHOLD && revealed) {
+    if (Math.abs(dragDeltaX) >= SWIPE_THRESHOLD && answered) {
       const goingGood = dragDeltaX > 0;
       cardEl.style.transform = `translateX(${goingGood ? 1 : -1}00vw) rotate(${goingGood ? 20 : -20}deg)`;
       setTimeout(() => {
         resetCardTransform();
         review(goingGood ? 'good' : 'again');
       }, 180);
-    } else if (Math.abs(dragDeltaX) >= SWIPE_THRESHOLD && !revealed) {
-      // Not revealed yet -- a swipe here just reveals rather than scoring a blind guess.
+    } else if (Math.abs(dragDeltaX) >= SWIPE_THRESHOLD && !answered) {
+      // Not answered yet -- a swipe here submits whatever's selected (often
+      // nothing), i.e. "skip / just show me" rather than scoring a blind guess.
       resetCardTransform();
-      reveal();
+      submitAnswer();
     } else {
       resetCardTransform();
     }
@@ -390,8 +479,11 @@
 
   cardEl.addEventListener('click', (e) => {
     if (suppressClick) { suppressClick = false; return; }
-    if (e.target.closest('#fcNoteBox') || e.target.closest('#fcNoteToggle') || e.target.closest('#fcWalkthroughWrap')) return;
-    if (!revealed) reveal(); else render();
+    if (e.target.closest('#fcNoteBox') || e.target.closest('#fcNoteToggle') || e.target.closest('#fcWalkthroughWrap') || e.target.closest('#fcOptions') || e.target.closest('#fcSubmitBtn')) return;
+    // Selecting/submitting now happens through the option rows and Submit
+    // button; a bare click on the card body just lets you restart an
+    // already-answered card for another attempt.
+    if (answered) render();
   });
 
   // --- Matching game mode ---

@@ -76,6 +76,12 @@
   .match-item.wrong-flash { border-color: var(--danger); background: rgba(239,90,90,0.15); }
   .match-item.matched { pointer-events: none; }
   #matchStatus { text-align: center; margin-bottom: 10px; font-size: 0.92rem; }
+
+  /* Select-then-submit flashcard quiz interaction */
+  .flashcard .fc-options .option-row { margin-bottom: 8px; }
+  #fcSubmitBtn { margin-top: 4px; }
+  .btn.suggested { box-shadow: 0 0 0 3px rgba(79,124,255,0.35); }
+  .btn.danger.suggested { box-shadow: 0 0 0 3px rgba(239,90,90,0.35); }
 </style>
 </head>
 <body>
@@ -131,6 +137,7 @@
         <div class="fc-label" id="fcCategory"></div>
         <div class="fc-question" id="fcQuestion">Loading...</div>
         <div class="fc-options" id="fcOptions"></div>
+        <button type="button" class="btn" id="fcSubmitBtn" style="display:none;">Submit Answer</button>
         <div class="fc-answer" id="fcAnswer" style="display:none;"></div>
         <div id="fcWalkthroughWrap" style="display:none;">
           <button type="button" class="btn secondary" id="fcShowMeHowBtn">&#128421; Show Me How</button>
@@ -150,7 +157,7 @@
         </div>
       </div>
     </div>
-    <p class="muted" style="text-align:center;">Click the card to reveal the answer. Drag it left/right to mark Review/Known &mdash; or use the buttons.</p>
+    <p class="muted" style="text-align:center;">Select your answer(s), then Submit to see how you did &mdash; or swipe/drag the card to skip straight to the answer.</p>
 
     <div class="btn-row" style="justify-content:center; margin-bottom: 20px;">
       <button class="btn secondary" id="prevBtn">&larr; Prev</button>
@@ -200,6 +207,7 @@
 <script src="assets/js/api.js"></script>
 <script src="assets/js/lib/drill-timing.js"></script>
 <script src="assets/js/lib/tts.js"></script>
+<script src="assets/js/lib/flashcard-grading.js"></script>
 <script src="assets/js/flashcards.js"></script>
 </body>
 </html>

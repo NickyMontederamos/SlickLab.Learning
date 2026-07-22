@@ -63,6 +63,11 @@
 
   .cluster-char {
     position: absolute;
+    /* Purely decorative -- must not intercept clicks. Without this, the
+       transparent parts of the PNG/WebP still count as part of the element's
+       clickable bounding box, so any overlap with the form below swallows
+       clicks/keyboard focus meant for the input underneath. */
+    pointer-events: none;
     /* crisp near-edge rim + soft ambient bloom, instead of one blurry layer */
     filter:
       drop-shadow(0 0 3px var(--neon-cyan))
@@ -76,6 +81,9 @@
 
   .cluster-main-logo {
     position: absolute; top: 22.4%; left: 24.8%; width: 50%; z-index: 4;
+    /* Same reasoning as .cluster-char -- this is the element that was
+       actually reported blocking the username field's clicks. */
+    pointer-events: none;
     filter:
       drop-shadow(0 0 4px var(--neon-gold))
       drop-shadow(0 0 11px var(--neon-cyan))

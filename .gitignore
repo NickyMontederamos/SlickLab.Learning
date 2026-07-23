@@ -8,6 +8,11 @@ csa-prep-deploy*/
 csa-prep/
 webapp -/
 webapp -.zip
+CSA_Prep_production_deploy/
+Live-SlickPrepTime/
+
+# Raw DB dumps — contain real user emails/password hashes, never commit.
+if0_37565517_csa.sql/
 
 # Study materials / generated reports — not source.
 *.pdf

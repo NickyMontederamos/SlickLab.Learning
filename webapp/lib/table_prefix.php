@@ -24,6 +24,8 @@ const CSA_TABLES = [
     'battle_beta_participants',
     'battle_beta_answers',
     'battle_beta_reactions',
+    'exhibition_sessions',
+    'exhibition_votes',
 ];
 
 /**

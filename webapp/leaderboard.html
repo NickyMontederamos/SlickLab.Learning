@@ -26,6 +26,12 @@
     <h2>⚔️ Quiz Battle</h2>
     <div id="battleLeaderboardWrap"><p class="muted">Loading...</p></div>
   </div>
+
+  <div class="card">
+    <h2>🏆 Exhibition Exam Wins</h2>
+    <p class="muted" style="margin-top:-6px;">Only counted when 2+ people actually took the same shared exam.</p>
+    <div id="exhibitionLeaderboardWrap"><p class="muted">Loading...</p></div>
+  </div>
 </div>
 
 <footer class="site-footer">
@@ -77,6 +83,20 @@
         <td>${row.battlesPlayed}</td>
       </tr>`).join('');
     battleWrap.innerHTML = `<table class="history"><thead><tr><th>#</th><th>User</th><th>Wins</th><th>Battles Played</th></tr></thead><tbody>${rows}</tbody></table>`;
+  }
+
+  const exhibitionWrap = document.getElementById('exhibitionLeaderboardWrap');
+  const withExhibitionWins = (leaderboard || []).filter(r => r.exhibitionWins > 0).sort((a, b) => b.exhibitionWins - a.exhibitionWins);
+  if (!withExhibitionWins.length) {
+    exhibitionWrap.innerHTML = '<p class="muted">No Exhibition Exam wins yet — host one from the dashboard!</p>';
+  } else {
+    const rows = withExhibitionWins.map((row, i) => `
+      <tr${i === 0 ? ' class="top-row"' : ''}>
+        <td>${RankIcons.medalByPlace(i) || i + 1}</td>
+        <td>${row.username}</td>
+        <td>${row.exhibitionWins}</td>
+      </tr>`).join('');
+    exhibitionWrap.innerHTML = `<table class="history"><thead><tr><th>#</th><th>User</th><th>Wins</th></tr></thead><tbody>${rows}</tbody></table>`;
   }
 })();
 </script>

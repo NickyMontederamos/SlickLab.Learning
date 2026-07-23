@@ -70,7 +70,7 @@ final class TablePrefixTest extends TestCase
         $this->assertStringNotContainsString('stg_stg_', $out);
     }
 
-    public function testAllSeventeenRealTableNamesAreInTheList(): void
+    public function testAllNineteenRealTableNamesAreInTheList(): void
     {
         $this->assertSame([
             'users', 'questions', 'options', 'flashcard_progress',
@@ -78,6 +78,23 @@ final class TablePrefixTest extends TestCase
             'battle_rooms', 'battle_participants', 'battle_answers', 'battle_reactions',
             'topics', 'topic_lesson_images', 'topic_block_content',
             'battle_beta_rooms', 'battle_beta_participants', 'battle_beta_answers', 'battle_beta_reactions',
+            'exhibition_sessions', 'exhibition_votes',
         ], CSA_TABLES);
+    }
+
+    public function testExhibitionTablesGetPrefixedAndDoNotCollideWithExamAttemptsColumn(): void
+    {
+        // exam_attempts.exhibition_session_id shares a word-prefix with
+        // "exhibition_sessions" -- the exact case a naive string-replace
+        // (vs. word-boundary regex) would get wrong, same as the
+        // question_id/user_id/option_text cases above.
+        $sql = 'SELECT * FROM exhibition_sessions WHERE id = ?';
+        $this->assertSame('SELECT * FROM stg_exhibition_sessions WHERE id = ?', csa_prefix_tables($sql, 'stg_'));
+
+        $colSql = 'SELECT exhibition_session_id FROM exam_attempts WHERE exhibition_session_id = ?';
+        $out = csa_prefix_tables($colSql, 'stg_');
+        $this->assertStringContainsString('exhibition_session_id', $out);
+        $this->assertStringNotContainsString('stg_exhibition_session_id', $out);
+        $this->assertStringContainsString('stg_exam_attempts', $out);
     }
 }

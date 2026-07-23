@@ -15,11 +15,27 @@
   }
 })(typeof window !== 'undefined' ? window : globalThis, function () {
   // @param result { attemptId, attemptKind, passed, incorrectCount, parentAttemptId,
-  //                 topicId, nextTopicId, blockNumber, blocksTotal, nextBlockNumber, allBlocksComplete }
+  //                 topicId, nextTopicId, blockNumber, blocksTotal, nextBlockNumber,
+  //                 allBlocksComplete, exhibitionSessionId }
   function buildResultsMessage(result) {
     var isMini = result.attemptKind === 'mini';
     var isTopic = result.attemptKind === 'topic';
     var isBlock = result.attemptKind === 'topic_block';
+    var isCustom = result.attemptKind === 'custom';
+
+    if (isCustom) {
+      // No pass/fail gate to walk back into (this doesn't unlock anything) --
+      // the only next step is back to the lobby to see how everyone else did.
+      return {
+        headline: result.passed ? 'Exhibition Exam submitted! 🎉' : 'Exhibition Exam submitted.',
+        message: 'The winner is decided once everyone has taken it (or the 24-hour window closes).',
+        cta: {
+          type: 'exhibition-lobby',
+          href: 'exhibition.html',
+          label: 'Back to the Exhibition Lobby',
+        },
+      };
+    }
 
     if (isBlock && result.passed && result.allBlocksComplete) {
       return {

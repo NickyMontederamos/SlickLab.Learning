@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exhibition Exam | SlickLab.Digital</title>
+<link rel="stylesheet" href="assets/css/style.css">
+<style>
+  .exhibition-candidate-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 0; border-bottom: 1px solid var(--border);
+    gap: 10px;
+  }
+  .exhibition-candidate-row:last-child { border-bottom: none; }
+  .exhibition-vote-bar {
+    flex: 1; background: var(--bg-elevated); border-radius: 6px; height: 14px;
+    overflow: hidden; margin: 0 10px;
+  }
+  .exhibition-vote-fill { height: 100%; background: var(--accent); transition: width 0.4s ease; border-radius: 6px; }
+  .exhibition-locked { opacity: 0.5; }
+  .exhibition-countdown { font-weight: 700; font-size: 1.1rem; }
+  .winner-banner {
+    text-align: center; padding: 18px; border-radius: 12px; margin-bottom: 14px;
+    background: linear-gradient(135deg, rgba(255,215,0,0.18), rgba(255,179,0,0.08));
+    border: 1px solid rgba(255,215,0,0.4);
+  }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand"><a href="dashboard.html" style="color:inherit;">SlickLab.Digital <span class="brand-accent">| CebuPips | OG Exclusive</span></a></div>
+  <div class="topbar-actions"><a href="dashboard.html">&larr; Dashboard</a></div>
+</div>
+
+<div class="container">
+
+  <!-- Intro: create or join -->
+  <div id="introScreen">
+    <h1>🏆 Exhibition Exam</h1>
+    <p class="muted">Pick topics, invite the crew, vote on what the exam covers, then everyone takes the same shared exam within 24 hours. Only counts for the leaderboard if 2+ people actually take it.</p>
+
+    <div class="grid-2">
+      <div class="card">
+        <h2>Host a New Exhibition</h2>
+        <p class="muted" style="margin-top:-6px;">Pick 2 or more of your own unlocked topics as candidates &mdash; everyone you invite will vote from this list.</p>
+        <div id="createTopicPicker"><p class="muted">Loading your unlocked topics&hellip;</p></div>
+        <button class="btn" id="createSessionBtn" style="width:100%; margin-top:12px;" disabled>Create Exhibition (pick 2+ topics)</button>
+      </div>
+      <div class="card">
+        <h2>Join with a Code</h2>
+        <p class="muted" style="margin-top:-6px;">Ask the host for their 6-character code.</p>
+        <label for="joinCodeInput">Session code</label>
+        <input type="text" id="joinCodeInput" maxlength="8" style="text-transform:uppercase;" placeholder="ABC123">
+        <button class="btn secondary" id="joinSessionBtn" style="width:100%; margin-top:10px;">Join Exhibition</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lobby: voting (waiting) or exam CTA (open) -->
+  <div id="lobbyScreen" style="display:none;">
+    <h1>Exhibition <span id="lobbyCode" class="brand-accent"></span></h1>
+    <p class="muted" id="lobbySubtext"></p>
+
+    <div class="card" id="votingCard">
+      <h2>Vote on Topics</h2>
+      <p class="muted" style="margin-top:-6px;">Pick any of the candidates below that you'd like on the shared exam &mdash; only your own unlocked topics are votable.</p>
+      <div id="candidateList"></div>
+    </div>
+
+    <div class="card" id="openCard" style="display:none;">
+      <h2 id="openCardHeadline"></h2>
+      <p class="muted" id="openCardSub"></p>
+      <div class="btn-row">
+        <button class="btn" id="takeExamBtn" style="display:none;">Take the Exam</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Who's Here (<span id="participantCount">0</span>)</h2>
+      <div id="participantList"></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn secondary" id="leaveSessionBtn">Leave</button>
+      <button class="btn" id="finalizeBtn" style="display:none;">Finalize &amp; Start the Clock</button>
+      <button class="btn danger" id="closeSessionBtn" style="display:none;">Close Now</button>
+    </div>
+  </div>
+
+  <!-- Results: winner + standings, once closed -->
+  <div id="resultsScreen" style="display:none;">
+    <div class="winner-banner" id="winnerBanner"></div>
+    <div class="card" id="standingsCard"></div>
+    <button class="btn" id="backToDashboardBtn">Back to Dashboard</button>
+  </div>
+
+</div>
+
+<footer class="site-footer">
+  <div class="footer-brand">SlickLab.Digital | CebuPips | OG Exclusive</div>
+  <p>Built for the crew grinding toward CSA certification together.</p>
+  <p class="muted">Study hard, trust your prep, and go pass that exam on the first try.</p>
+</footer>
+
+<script src="assets/js/api.js"></script>
+<script src="assets/js/lib/rank-icons.js"></script>
+<script src="assets/js/exhibition.js"></script>
+</body>
+</html>

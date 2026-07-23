@@ -225,5 +225,6 @@ json_out([
     'nextBlockNumber' => $nextBlockNumber,
     'allBlocksComplete' => $allBlocksComplete,
     'unlocked' => $attempt['attempt_kind'] === 'topic' ? $passed : null,
+    'exhibitionSessionId' => $attempt['exhibition_session_id'] !== null ? (int)$attempt['exhibition_session_id'] : null,
     'review' => $review,
 ]);

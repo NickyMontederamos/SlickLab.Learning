@@ -1,6 +1,7 @@
 <?php
 require __DIR__ . '/../config/bootstrap.php';
 require __DIR__ . '/../lib/leaderboard.php';
+require __DIR__ . '/../lib/exhibition_exam.php';
 
 require_login();
 $pdo = csa_db();
@@ -96,6 +97,27 @@ foreach (
     $topicsMasteredByUser[(int)$row['user_id']] = (int)$row['topics_mastered'];
 }
 
+// Exhibition Exam wins -- its own separate signal, deliberately not blended
+// into bestExamPercent/bestExamCorrect/bestExamTotal above (that trio stays
+// scoped to attempt_kind='full' only, per the agreed spec). Re-derived here
+// at read time via the same csa_exhibition_compute_session_winner() helper
+// exhibition_close.php uses -- no winner-flag column to go stale (see
+// migration_17.sql). "Closed" here includes a session whose 24h window has
+// lazily elapsed even if nobody has polled it since to flip the DB status,
+// matching the cron-less lazy-expiry approach used everywhere else in this
+// feature -- but this is a read-only report, so it checks the condition
+// rather than writing the status flip itself.
+$exhibitionWinsByUser = []; // userId => count
+$closedSessionIds = $pdo->query(
+    "SELECT id FROM exhibition_sessions WHERE status = 'closed' OR (status = 'open' AND closes_at <= NOW())"
+)->fetchAll(PDO::FETCH_COLUMN);
+foreach ($closedSessionIds as $sid) {
+    $winner = csa_exhibition_compute_session_winner($pdo, (int)$sid);
+    if ($winner !== null) {
+        $exhibitionWinsByUser[$winner['userId']] = ($exhibitionWinsByUser[$winner['userId']] ?? 0) + 1;
+    }
+}
+
 $out = [];
 foreach ($rows as $r) {
     $catStmt->execute([$r['id']]);
@@ -130,6 +152,7 @@ foreach ($rows as $r) {
         'battlesPlayed' => $bs['played'],
         'battlesWon' => $bs['wins'],
         'topicsMastered' => $topicsMastered,
+        'exhibitionWins' => $exhibitionWinsByUser[(int)$r['id']] ?? 0,
         'points' => $points,
         'rankLabel' => $rank['label'],
         'rankTier' => $rank['tier'],

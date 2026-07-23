@@ -11,3 +11,4 @@ require __DIR__ . '/../webapp/lib/topic_quiz.php';
 require __DIR__ . '/../webapp/lib/upload_validation.php';
 require __DIR__ . '/../webapp/lib/leaderboard.php';
 require __DIR__ . '/../webapp/lib/battle_beta_classes.php';
+require __DIR__ . '/../webapp/lib/exhibition_exam.php';

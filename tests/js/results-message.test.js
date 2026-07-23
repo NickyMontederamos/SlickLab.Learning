@@ -135,3 +135,24 @@ test('buildResultsMessage: block branch is checked before topic/mini/full, so a 
   assert.equal(r.message, null);
   assert.notEqual(r.cta.type, 'review-incorrect');
 });
+
+test('buildResultsMessage: exhibition exam always links back to the lobby, pass or fail', () => {
+  const passed = ResultsMessage.buildResultsMessage({
+    attemptId: 40, attemptKind: 'custom', passed: true, incorrectCount: 5, exhibitionSessionId: 7,
+  });
+  assert.equal(passed.headline, 'Exhibition Exam submitted! 🎉');
+  assert.deepEqual(passed.cta, { type: 'exhibition-lobby', href: 'exhibition.html', label: 'Back to the Exhibition Lobby' });
+
+  const failed = ResultsMessage.buildResultsMessage({
+    attemptId: 41, attemptKind: 'custom', passed: false, incorrectCount: 12, exhibitionSessionId: 7,
+  });
+  assert.equal(failed.headline, 'Exhibition Exam submitted.');
+  assert.equal(failed.cta.type, 'exhibition-lobby');
+});
+
+test('buildResultsMessage: exhibition branch is checked before full-exam incorrect-review messaging', () => {
+  const r = ResultsMessage.buildResultsMessage({
+    attemptId: 42, attemptKind: 'custom', passed: true, incorrectCount: 3, exhibitionSessionId: 7,
+  });
+  assert.notEqual(r.cta.type, 'review-incorrect');
+});

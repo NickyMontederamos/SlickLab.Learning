@@ -112,15 +112,48 @@ CREATE TABLE IF NOT EXISTS exam_attempts (
     passed TINYINT(1) NOT NULL DEFAULT 0,
     status ENUM('in_progress','completed','abandoned') NOT NULL DEFAULT 'in_progress',
     parent_attempt_id INT UNSIGNED NULL,
-    attempt_kind ENUM('full','mini','topic','topic_block') NOT NULL DEFAULT 'full',
+    attempt_kind ENUM('full','mini','topic','topic_block','custom') NOT NULL DEFAULT 'full',
     topic_id INT UNSIGNED NULL,
     block_number SMALLINT UNSIGNED NULL,
+    topic_ids MEDIUMTEXT NULL,
+    exhibition_session_id INT UNSIGNED NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (parent_attempt_id) REFERENCES exam_attempts(id) ON DELETE CASCADE,
     FOREIGN KEY (topic_id) REFERENCES topics(id) ON DELETE SET NULL,
     INDEX idx_exam_attempts_parent (parent_attempt_id),
     INDEX idx_exam_attempts_user (user_id),
-    INDEX idx_exam_attempts_topic_block (topic_id, attempt_kind, block_number)
+    INDEX idx_exam_attempts_topic_block (topic_id, attempt_kind, block_number),
+    INDEX idx_exam_attempts_exhibition_session (exhibition_session_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Exhibition Exam: host-created multi-topic voting session. See
+-- migration_17.sql for why there's no candidate-topics, winning-topic-ids,
+-- participants, or winner-flag column -- all of that is derived at read
+-- time from exhibition_votes / exam_attempts instead of duplicated here.
+CREATE TABLE IF NOT EXISTS exhibition_sessions (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    code VARCHAR(8) NOT NULL UNIQUE,
+    host_user_id INT UNSIGNED NOT NULL,
+    status ENUM('waiting','open','closed') NOT NULL DEFAULT 'waiting',
+    question_ids MEDIUMTEXT NULL,
+    host_last_seen_at DATETIME NULL,
+    opened_at DATETIME NULL,
+    closes_at DATETIME NULL,
+    closed_at DATETIME NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (host_user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS exhibition_votes (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    session_id INT UNSIGNED NOT NULL,
+    user_id INT UNSIGNED NOT NULL,
+    topic_id INT UNSIGNED NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (session_id) REFERENCES exhibition_sessions(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (topic_id) REFERENCES topics(id) ON DELETE CASCADE,
+    UNIQUE KEY uniq_exhibition_session_user_topic (session_id, user_id, topic_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS exam_answers (

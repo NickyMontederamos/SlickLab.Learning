@@ -1,6 +1,7 @@
 # Secrets — never commit real DB credentials, even local-dev ones.
 webapp/config/config.local.php
 webapp/config/config.production.php
+deploy/deploy.config.local.json
 
 # Deploy artifacts — webapp/ is the source of truth; these are build output.
 *.zip

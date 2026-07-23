@@ -1,0 +1,19 @@
+{
+  "_comment": "Copy this file to deploy.config.local.json and fill in real values. deploy.config.local.json is gitignored -- never commit real FTP credentials.",
+  "staging": {
+    "host": "ftpupload.net",
+    "port": 21,
+    "username": "",
+    "password": "",
+    "remoteBasePath": "/htdocs/SlickPrepTime",
+    "localSourceDir": "..\\..\\SlickPrepTimeLatest\\SlickPrepTime"
+  },
+  "production": {
+    "host": "ftpupload.net",
+    "port": 21,
+    "username": "",
+    "password": "",
+    "remoteBasePath": "/htdocs",
+    "localSourceDir": "..\\webapp"
+  }
+}
